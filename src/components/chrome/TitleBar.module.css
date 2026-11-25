@@ -109,3 +109,8 @@
 .caption .close svg {
   shape-rendering: geometricPrecision;
 }
+
+/* macOS draws its traffic lights over the left of the bar. */
+:global(:root[data-platform="mac"]) .bar {
+  padding-left: 84px;
+}

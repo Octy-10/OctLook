@@ -18,6 +18,7 @@ import {
 
 import { useAsync } from "../../hooks/useAsync";
 import { editActions, fileActions, viewActions, windowActions } from "../../lib/actions";
+import { REVEAL_LABEL, TRASH_LABEL } from "../../lib/platform";
 import { useUpdate } from "../../store/update";
 import { useViewState, type Backdrop, type Theme } from "../../store/view";
 import { MENU_ICON as ICON, MenuItem as Item, useMenuDismiss } from "./Menu";
@@ -79,9 +80,9 @@ export function SettingsMenu({ onClose }: { onClose(): void }) {
       <h5>文件</h5>
       <Item icon={<ImagePlus {...ICON} />} label="打开文件" shortcut="Ctrl O" onSelect={() => fileActions.openDialog()} />
       <Item icon={<FolderOpen {...ICON} />} label="打开文件夹" shortcut="Ctrl Shift O" onSelect={() => fileActions.openDialog(true)} />
-      <Item icon={<FolderSearch {...ICON} />} label="在资源管理器中显示" shortcut="Ctrl E" onSelect={fileActions.reveal} />
+      <Item icon={<FolderSearch {...ICON} />} label={REVEAL_LABEL} shortcut="Ctrl E" onSelect={fileActions.reveal} />
       <Item icon={<Copy {...ICON} />} label="复制路径" shortcut="Ctrl Shift C" onSelect={fileActions.copyPath} />
-      <Item icon={<Trash2 {...ICON} />} label="移至回收站" shortcut="Del" danger onSelect={fileActions.trash} />
+      <Item icon={<Trash2 {...ICON} />} label={TRASH_LABEL} shortcut="Del" danger onSelect={fileActions.trash} />
 
       <footer>
         <span>OctLook{version ? ` ${version}` : ""}</span>

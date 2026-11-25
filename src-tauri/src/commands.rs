@@ -2,6 +2,8 @@
 
 use std::{path::PathBuf, sync::Arc};
 
+use parking_lot::Mutex;
+
 use octlook_core::{
     decode::{self, Purpose},
     format, meta,
@@ -19,12 +21,19 @@ use crate::{
     wire,
 };
 
-/// File passed on the command line ("Open with…" / file association).
-pub struct LaunchPath(Option<PathBuf>);
+/// File the app was asked to open and the page has not picked up yet: from
+/// the command line ("Open with…" on Windows) or, on macOS, from Finder's
+/// open-document event, which can arrive before the page asks for it.
+pub struct LaunchPath(Mutex<Option<PathBuf>>);
 
 impl LaunchPath {
     pub fn from_args() -> Self {
-        Self(std::env::args_os().skip(1).map(PathBuf::from).find(|p| p.exists()))
+        Self(Mutex::new(std::env::args_os().skip(1).map(PathBuf::from).find(|p| p.exists())))
+    }
+
+    #[cfg(target_os = "macos")]
+    pub fn set(&self, path: PathBuf) {
+        *self.0.lock() = Some(path);
     }
 }
 
@@ -80,7 +89,7 @@ pub async fn recognize_text(request: Request<'_>, ocr: State<'_, Arc<Ocr>>) -> R
 
 #[tauri::command]
 pub fn launch_path(launch: State<'_, LaunchPath>) -> Option<PathBuf> {
-    launch.0.clone()
+    launch.0.lock().take()
 }
 
 #[tauri::command]

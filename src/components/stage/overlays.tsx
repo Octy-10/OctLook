@@ -3,6 +3,7 @@ import { FileWarning, FolderSearch } from "lucide-react";
 
 import type { Probe } from "../../hooks/useColorProbe";
 import { fileActions } from "../../lib/actions";
+import { REVEAL_LABEL } from "../../lib/platform";
 import { useEditState } from "../../store/edit";
 import styles from "./Stage.module.css";
 
@@ -51,7 +52,7 @@ export function StageError({ message }: { message: string }) {
       <h2>无法预览此文件</h2>
       <p>{message}</p>
       <button onClick={fileActions.reveal}>
-        <FolderSearch size={14} /> 在资源管理器中显示
+        <FolderSearch size={14} /> {REVEAL_LABEL}
       </button>
     </div>
   );

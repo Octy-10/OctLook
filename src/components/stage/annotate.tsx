@@ -27,6 +27,7 @@ import {
   type TextAnnotation,
   type Tool,
 } from "../../lib/annotate";
+import { isMac, keys } from "../../lib/platform";
 import { useEditState } from "../../store/edit";
 import { useViewState } from "../../store/view";
 import bar from "./toolbar.module.css";
@@ -382,13 +383,13 @@ export function AnnotateBar({ content, tool }: { content: StageContent; tool: To
         <output>{Math.round(sizeAt(kind, unit, scale))}</output>
       </label>
       <span className={bar.divider} />
-      <button className={bar.action} data-tip="撤销  Ctrl Z" data-tip-side="bottom" disabled={!canUndo} onClick={() => edit().undo()}>
+      <button className={bar.action} data-tip={keys("撤销  Ctrl Z")} data-tip-side="bottom" disabled={!canUndo} onClick={() => edit().undo()}>
         <Undo2 size={15} />
       </button>
-      <button className={bar.action} data-tip="重做  Ctrl Y" data-tip-side="bottom" disabled={!canRedo} onClick={() => edit().redo()}>
+      <button className={bar.action} data-tip={keys(isMac ? "重做  Ctrl Shift Z" : "重做  Ctrl Y")} data-tip-side="bottom" disabled={!canRedo} onClick={() => edit().redo()}>
         <Redo2 size={15} />
       </button>
-      <button className={bar.action} data-tip="删除选中  Del" data-tip-side="bottom" disabled={!current} onClick={editActions.removeSelected}>
+      <button className={bar.action} data-tip={keys("删除选中  Del")} data-tip-side="bottom" disabled={!current} onClick={editActions.removeSelected}>
         <Trash2 size={15} />
       </button>
       <button className={bar.action} data-primary data-tip="完成  Esc" data-tip-side="bottom" onClick={editActions.toggleAnnotate}>

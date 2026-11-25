@@ -1,8 +1,28 @@
+<p align="center"><img src="docs/banner.svg" alt="OctLook — 专为设计师打造的极简看图软件" width="100%"></p>
+
+<p align="center">
+  <a href="https://github.com/Octy-10/OctLook/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/Octy-10/OctLook?style=flat-square&color=6E8BFF"></a>
+  <a href="https://github.com/Octy-10/OctLook/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/Octy-10/OctLook/build.yml?style=flat-square"></a>
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-1B1D26?style=flat-square">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-GPL--3.0-1B1D26?style=flat-square"></a>
+</p>
+
+<p align="center"><a href="https://github.com/Octy-10/OctLook/releases/latest"><b>下载最新版</b></a> · 启动时自动检查新版本，也可在设置菜单中手动检查</p>
+
 # OctLook
 
-专为设计师打造的极简看图软件：秒开 PSD、AI、CDR、Sketch 等设计文件，在资源管理器中直接显示缩略图，同时胜任日常看图。Tauri 2（Rust）+ React 19 + TypeScript。
+专为设计师打造的极简看图软件：秒开 PSD、AI、CDR、Sketch 等设计文件，在资源管理器中直接显示缩略图，同时胜任日常看图。Tauri 2（Rust）+ React 19 + TypeScript，支持 Windows 与 macOS。
 
-[下载最新版](https://github.com/Octy-10/OctLook/releases/latest) · 安装后会自动提示新版本。
+## 核心亮点
+
+<p align="center"><img src="docs/highlights.svg" alt="核心亮点" width="100%"></p>
+
+- **设计文件秒开**：PSD / PSB 由 Rust 自研解析（含 16/32 bit、CMYK、Lab），AI / PDF 矢量渲染放大不糊，CDR、Sketch、XD、Figma、Affinity 等读取内嵌预览，相机 RAW 与 HEIC 也能直接看。
+- **系统级缩略图**（Windows）：安装后资源管理器直接显示 PSD、AI、SVG、CDR 等文件的缩略图，并带格式角标，不用再逐个打开确认。
+- **离线文字识别**：内置 PaddleOCR PP-OCRv5 轻量模型，一键提取简繁中文、英文、日文，竖排与倾斜文字也能识别；全程本地运行，不上传任何图片。
+- **随手标注与裁剪**：文字、箭头、矩形、画笔四种标注，支持撤销 / 重做；裁剪可锁定比例或直接输入像素尺寸。
+- **调色与取色**：曝光、对比度、色温等实时预览，导出与预览逐像素一致；取色器单击复制 HEX，文件信息自动列出主色与印刷尺寸。
+- **非破坏、轻量、干净**：原文件从不被改写，结果另存为新文件；扁平化界面、深浅色主题、右键快捷菜单；无广告、无账号、不联网（检查更新除外）。
 
 ## 格式支持
 
@@ -14,9 +34,9 @@
 | AI（旧版）/ EPS / INDD | 内嵌预览 | XMP 缩略图；DOS EPS 的 TIFF 预览 |
 | CDR（7 – 2024） | 内嵌预览 | X4+ ZIP 内的缩略图 / RIFF `DISP` 位图 |
 | Sketch / XD / Fig / Krita / ORA / Procreate / Affinity | 内嵌预览 | 读取文件内置的扁平化预览图 |
-| 相机 RAW（CR2 CR3 NEF ARW DNG RAF ORF RW2 …） | 内嵌全尺寸 JPEG | 预览过小时回退 Windows RAW 解码器 |
-| TIFF TGA DDS HDR EXR QOI PNM | `image` crate | 浮点图做伽马编码；失败回退 WIC |
-| HEIC / HEIF / JXL / JXR | Windows WIC | 依赖系统已安装的编解码扩展 |
+| 相机 RAW（CR2 CR3 NEF ARW DNG RAF ORF RW2 …） | 内嵌全尺寸 JPEG | 预览过小时回退系统 RAW 解码器 |
+| TIFF TGA DDS HDR EXR QOI PNM | `image` crate | 浮点图做伽马编码；失败回退系统解码器 |
+| HEIC / HEIF / JXL / JXR | 系统解码器 | Windows 用 WIC（依赖已安装的编解码扩展）；macOS 用 ImageIO（JXL 需 macOS 14+，不支持 JXR） |
 
 界面左上角的「内嵌预览」标识表示显示的是设计软件保存的预览图，而非完整渲染。
 
@@ -25,8 +45,8 @@
 所有编辑都是非破坏性的：原文件从不被改写，结果通过「导出」另存为新文件。切换到其他图片时，未导出的编辑会被丢弃。
 
 - **调色**（`E`）：曝光、对比度、饱和度、色温、色调、色相，以及黑白 / 反相。预览走 GPU 上的 SVG 颜色矩阵滤镜，导出使用同一矩阵逐像素计算，所见即所得。双击滑块复位单项。
-- **标注**（`A`）：文字、箭头、矩形，六种颜色；工具栏的滑块随当前工具或选中元素变化（文字调字号，箭头调大小，矩形调线宽）。文字直接在画面上输入（单击落点即可打字，双击已有文字重新编辑）；选中元素后拖动本体移动，拖动手柄缩放（矩形四角、箭头两端、文字右下角），`Del` 删除。文字在添加时自动摆正，即使图片已旋转或翻转。标注随导出一并写入新文件。
-- **裁剪**（`X`）：自由或锁定比例（原始、1:1、4:3、3:2、16:9、3:4、9:16），三分线辅助；`Enter` / 双击应用，`Esc` 取消。
+- **标注**（`A`）：文字、箭头、矩形、画笔，六种颜色；工具栏的滑块随当前工具或选中元素变化（文字调字号，箭头调大小，矩形与画笔调线宽）。文字直接在画面上输入（单击落点即可打字，双击已有文字重新编辑）；选中元素后拖动本体移动，拖动手柄缩放（矩形四边与四角、箭头两端、文字四角，指针随方向变化），`Del` 删除，`Ctrl Z` / `Ctrl Shift Z` 撤销重做。文字在添加时自动摆正，即使图片已旋转或翻转。标注随导出一并写入新文件。
+- **裁剪**（`X`）：自由或锁定比例（原始、1:1、4:3、3:2、16:9、3:4、9:16），可直接输入像素宽高，三分线辅助；`Enter` / 双击应用，`Esc` 取消。
 - **前后对比**：按住 `\` 临时查看调色前的画面；编辑面板中可开启可拖动的分屏对比。
 - **重置**（`Ctrl R`）：一键撤销调色、裁剪、标注、旋转和翻转。
 - **导出**（`Ctrl S`）：PNG / JPG / WebP，可设质量与长边像素；PDF、AI 等矢量文件按 300 dpi 栅格化。导出结果为 8 bit sRGB，不保留 EXIF 与 ICC 配置文件。
@@ -34,9 +54,17 @@
 - **文字提取**（`O`）：PDF / AI 直接读取内嵌文本；其余图片用 PaddleOCR PP-OCRv5 轻量模型（Apache-2.0）在 ONNX Runtime 上离线识别，覆盖简繁中文、英文、日文与竖排、倾斜文字，已裁剪时只识别裁剪区域。模型随安装包分发（约 21 MB），首次使用时加载，不联网。模型由 `scripts/fetch-ocr-models.mjs` 在构建前下载并校验 SHA-256（国内可设 `HF_ENDPOINT=https://hf-mirror.com`）。
 - **文件信息**（`I`）：除格式、尺寸、EXIF 外，还显示 300 dpi 下的印刷尺寸和图片主色（单击色块复制 HEX）。
 
-底部工具条只保留高频工具（旋转、裁剪、标注、调色、取色、提取文字、导出）。缩放比例显示在标题栏文件名旁，单击在适应窗口与 100% 之间切换。其余命令和偏好集中在工具条右侧的设置菜单：复制图像、文件信息、翻转、适应窗口 / 实际大小、画布背景、界面外观（跟随系统 / 深色 / 浅色）、缩略图栏、全屏以及文件操作。
+底部工具条只保留高频工具（旋转、裁剪、标注、调色、取色、提取文字、导出）。缩放比例显示在标题栏左侧，单击在适应窗口与 100% 之间切换。右键图片弹出快捷菜单（复制图像 / 路径、旋转、提取文字、导出等）。标题栏的齿轮按钮打开设置菜单：画布背景、界面外观（跟随系统 / 深色 / 浅色）、全屏、文件操作与「检查更新」。缩略图栏左上角的按钮可展开或收起缩略图栏（`T`）。
 
-## 资源管理器缩略图
+## macOS
+
+- 提供 Apple 芯片（`aarch64`）与 Intel（`x64`）两个 `.dmg`，要求 macOS 11 及以上。
+- 安装包暂未经过 Apple 公证。首次打开若提示「无法验证开发者」，请在「系统设置 › 隐私与安全性」中点击「仍要打开」，或在终端执行 `xattr -dr com.apple.quarantine /Applications/OctLook.app`。
+- 窗口保留系统红绿灯按钮；快捷键中的 `Ctrl` 对应 `⌘`，`Del` 对应 `⌫`。
+- 可在访达「打开方式」中选择 OctLook；不会抢占系统默认应用。
+- 访达缩略图扩展暂未提供（资源管理器缩略图为 Windows 独有功能）。
+
+## 资源管理器缩略图（Windows）
 
 安装包会注册一个 Windows 缩略图扩展（`octlook_shell.dll`，进程隔离运行），让桌面和文件夹直接显示 PSD、PSB、AI、SVG、CDR、Sketch、XD、Figma、Krita、OpenRaster、Affinity 等文件的缩略图。
 
@@ -53,6 +81,8 @@
 
 ## 快捷键
 
+macOS 上 `Ctrl` 换成 `⌘`，`Del` 换成 `⌫`；撤销 / 重做为 `Ctrl Z` / `Ctrl Shift Z`（或 `Ctrl Y`）。
+
 | 键 | 功能 | 键 | 功能 |
 | --- | --- | --- | --- |
 | ← → / 空格 | 上一张 / 下一张 | ↑ ↓ | PDF 翻页 |
@@ -60,13 +90,13 @@
 | 0 / 1 / 双击 | 适应窗口 / 100% | + − | 缩放档位 |
 | R / Shift R | 旋转 | H / V | 水平 / 垂直翻转 |
 | X | 裁剪（Enter 应用） | E | 调色与导出面板 |
-| A | 标注（文字 / 箭头 / 矩形） | Del | 删除选中标注 / 移至回收站 |
+| A | 标注（文字 / 箭头 / 矩形 / 画笔） | Ctrl Z / Ctrl Shift Z | 撤销 / 重做标注 |
 | 按住 \ | 对比调色前 | Ctrl R | 重置全部编辑 |
 | Ctrl S | 导出为新文件 | Ctrl C | 复制图像 |
 | O | 提取文字（OCR） | | |
 | C | 取色器（单击复制 HEX） | B | 切换背景（深 / 浅 / 透明网格） |
 | I | 文件信息与 EXIF | T | 缩略图栏 |
-| F / F11 | 全屏 | Del | 移至回收站 |
+| F / F11 | 全屏 | Del | 删除选中标注 / 移至回收站 |
 | Ctrl O / Ctrl Shift O | 打开文件 / 文件夹 | Ctrl E / Ctrl Shift C | 在资源管理器中显示 / 复制路径 |
 
 ## 开发
@@ -86,8 +116,8 @@ $env:TAURI_SIGNING_PRIVATE_KEY = Get-Content "$env:USERPROFILE\.tauri\octlook-up
 
 1. 修改 `src-tauri/tauri.conf.json`、`package.json` 与各 `Cargo.toml` 中的 `version`。
 2. 提交后推送同名标签，例如 `git tag v0.2.0 && git push origin v0.2.0`。
-3. GitHub Actions（`.github/workflows/release.yml`）运行测试、构建并签名安装包，发布 Release 与 `latest.json`。
-4. 已安装的 OctLook 启动后在后台检查，用户点击「更新并重启」后安装；更新包签名不符会被拒绝。
+3. GitHub Actions（`.github/workflows/build.yml`）运行测试，构建并签名 Windows 安装包与 macOS（Apple 芯片 / Intel）`.dmg`，发布 Release 与 `latest.json`。推送到 `main` 时只构建，安装包作为 Actions 产物下载。
+4. 已安装的 OctLook 启动时检查一次（也可在设置菜单手动检查），用户点击「更新并重启」后安装；更新包签名不符会被拒绝。
 
 仓库需配置 Secret `TAURI_SIGNING_PRIVATE_KEY`（私钥文件全文）。私钥丢失将无法再向现有用户推送更新。
 
@@ -101,7 +131,7 @@ $env:OCTLOOK_SAMPLES="D:\samples"; $env:OCTLOOK_OUT="D:\out"; cargo test --relea
 
 ```
 src-tauri/crates/octlook-core   解码服务（看图程序与缩略图扩展共用）
-  decode/       psd · embedded（XMP/JPEG/PNG/EPS）· container（ZIP/CDR）· svg（resvg）· raster · wic · stream（IStream 入口）
+  decode/       psd · embedded（XMP/JPEG/PNG/EPS）· container（ZIP/CDR）· svg（resvg）· raster · wic（Windows）· imageio（macOS）· stream（IStream 入口）
   format.rs     扩展名表（唯一数据源）；meta.rs EXIF；thumbnail.rs 方向校正 + Lanczos 缩放
 src-tauri/crates/octlook-shell  资源管理器缩略图 COM 组件（IThumbnailProvider + IInitializeWithStream）
 src-tauri/src                   Tauri 应用
@@ -117,7 +147,7 @@ src
   components/   纯 UI
 ```
 
-已复用的开源组件：`image`、`resvg`、`fast_image_resize`、`zip`、`kamadak-exif`、`trash`、pdf.js、PaddleOCR PP-OCRv5 模型、ONNX Runtime（`ort`）、Windows WIC、lucide 图标、Inter 字体。PSD 解析自研，原因是现有 crate（`psd`、`rawpsd`）不支持 PSB 或 16/32 bit。
+已复用的开源组件：`image`、`resvg`、`fast_image_resize`、`zip`、`kamadak-exif`、`trash`、pdf.js、PaddleOCR PP-OCRv5 模型、ONNX Runtime（`ort`）、Windows WIC、macOS ImageIO、lucide 图标、Inter 字体。PSD 解析自研，原因是现有 crate（`psd`、`rawpsd`）不支持 PSB 或 16/32 bit。
 
 ## 许可证
 

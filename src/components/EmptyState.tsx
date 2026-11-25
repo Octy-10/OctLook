@@ -1,6 +1,7 @@
 import { FolderOpen, ImagePlus } from "lucide-react";
 
 import { fileActions } from "../lib/actions";
+import { keys } from "../lib/platform";
 import styles from "./EmptyState.module.css";
 
 const FORMATS = [
@@ -34,7 +35,7 @@ export function EmptyState() {
 
         <div className={styles.actions}>
           <button className={styles.primary} onClick={() => fileActions.openDialog()}>
-            <ImagePlus size={16} /> 打开文件 <kbd>Ctrl O</kbd>
+            <ImagePlus size={16} /> 打开文件 <kbd>{keys("Ctrl O")}</kbd>
           </button>
           <button className={styles.secondary} onClick={() => fileActions.openDialog(true)}>
             <FolderOpen size={16} /> 打开文件夹
@@ -50,7 +51,7 @@ export function EmptyState() {
         <ul className={styles.shortcuts}>
           {SHORTCUTS.map(([k, label]) => (
             <li key={k}>
-              <kbd>{k}</kbd>
+              <kbd>{keys(k)}</kbd>
               {label}
             </li>
           ))}

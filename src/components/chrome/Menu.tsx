@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 
+import { keys } from "../../lib/platform";
 import styles from "./Menu.module.css";
 
 export const MENU_ICON = { size: 15, strokeWidth: 1.75 };
@@ -29,7 +30,7 @@ export function MenuItem({ icon, label, shortcut, checked, danger, disabled, kee
     >
       {icon}
       <span>{label}</span>
-      {shortcut && <kbd>{shortcut}</kbd>}
+      {shortcut && <kbd>{keys(shortcut)}</kbd>}
     </button>
   );
 }

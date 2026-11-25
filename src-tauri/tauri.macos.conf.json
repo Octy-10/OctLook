@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "build": {
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "OctLook",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 640,
+        "minHeight": 420,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "trafficLightPosition": { "x": 16, "y": 20 },
+        "dragDropEnabled": true,
+        "center": true,
+        "visible": false,
+        "backgroundColor": "#0B0B0D"
+      }
+    ]
+  },
+  "bundle": {
+    "targets": ["app", "dmg"],
+    "resources": {
+      "target/release/octlook_shell.dll": null
+    },
+    "category": "public.app-category.graphics-design",
+    "macOS": {
+      "minimumSystemVersion": "11.0"
+    },
+    "fileAssociations": [
+      { "name": "Photoshop Document", "ext": ["psd", "psb"], "role": "Viewer", "rank": "Alternate" },
+      { "name": "Illustrator Artwork", "ext": ["ai", "eps", "epsf"], "role": "Viewer", "rank": "Alternate" },
+      { "name": "Design File", "ext": ["cdr", "sketch", "xd", "fig", "indd", "afdesign", "afphoto", "afpub", "kra", "ora", "procreate"], "role": "Viewer", "rank": "Alternate" },
+      { "name": "Image", "ext": ["png", "apng", "jpg", "jpeg", "jfif", "gif", "webp", "avif", "heic", "heif", "bmp", "tif", "tiff", "svg", "ico", "tga", "dds", "exr", "hdr", "qoi", "jxl"], "role": "Viewer", "rank": "Alternate" },
+      { "name": "Camera RAW", "ext": ["dng", "cr2", "cr3", "crw", "nef", "nrw", "arw", "srf", "sr2", "raf", "orf", "rw2", "pef", "srw", "x3f", "3fr", "iiq", "rwl"], "role": "Viewer", "rank": "Alternate" },
+      { "name": "PDF Document", "ext": ["pdf"], "role": "Viewer", "rank": "Alternate" }
+    ]
+  }
+}

@@ -2,6 +2,7 @@ import { ClipboardCopy, RotateCcw, Save, SplitSquareHorizontal } from "lucide-re
 
 import { editActions } from "../../lib/actions";
 import { isNeutral, NEUTRAL, type Adjustments } from "../../lib/edits";
+import { keys } from "../../lib/platform";
 import { EXPORT_FORMATS } from "../../lib/render";
 import { useEditState, type ExportFormat } from "../../store/edit";
 import { Panel } from "./Panel";
@@ -54,13 +55,13 @@ export function EditPanel() {
       title="编辑"
       footer={
         <>
-          <button onClick={editActions.reset} data-tip="重置全部编辑  Ctrl R">
+          <button onClick={editActions.reset} data-tip={keys("重置全部编辑  Ctrl R")}>
             <RotateCcw size={13} /> 重置
           </button>
-          <button onClick={editActions.copyImage} data-tip="复制图像  Ctrl C">
+          <button onClick={editActions.copyImage} data-tip={keys("复制图像  Ctrl C")}>
             <ClipboardCopy size={13} /> 复制
           </button>
-          <button onClick={editActions.export} data-tip="另存为新文件  Ctrl S">
+          <button onClick={editActions.export} data-tip={keys("另存为新文件  Ctrl S")}>
             <Save size={13} /> 导出
           </button>
         </>

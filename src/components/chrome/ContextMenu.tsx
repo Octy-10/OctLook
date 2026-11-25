@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { editActions, fileActions, viewActions } from "../../lib/actions";
+import { REVEAL_LABEL, TRASH_LABEL } from "../../lib/platform";
 import { useViewState } from "../../store/view";
 import { MENU_ICON as ICON, MenuItem as Item, useMenuDismiss } from "./Menu";
 import styles from "./Menu.module.css";
@@ -71,7 +72,7 @@ export function ContextMenu({ at, onClose }: { at: Point; onClose(): void }) {
     >
       <Item icon={<ClipboardCopy {...ICON} />} label="复制图像" shortcut="Ctrl C" onSelect={editActions.copyImage} />
       <Item icon={<Copy {...ICON} />} label="复制文件路径" shortcut="Ctrl Shift C" onSelect={fileActions.copyPath} />
-      <Item icon={<FolderSearch {...ICON} />} label="在资源管理器中显示" shortcut="Ctrl E" onSelect={fileActions.reveal} />
+      <Item icon={<FolderSearch {...ICON} />} label={REVEAL_LABEL} shortcut="Ctrl E" onSelect={fileActions.reveal} />
       <div className={styles.separator} />
       <Item icon={<RotateCw {...ICON} />} label="向右旋转" shortcut="R" keepOpen onSelect={() => viewActions.rotate(1)} />
       <Item icon={<RotateCcw {...ICON} />} label="向左旋转" shortcut="Shift R" keepOpen onSelect={() => viewActions.rotate(-1)} />
@@ -83,7 +84,7 @@ export function ContextMenu({ at, onClose }: { at: Point; onClose(): void }) {
       <Item icon={<Info {...ICON} />} label="文件信息" shortcut="I" checked={panel === "info"} onSelect={() => useViewState.getState().togglePanel("info")} />
       <Item icon={<Save {...ICON} />} label="导出" shortcut="Ctrl S" onSelect={editActions.export} />
       <div className={styles.separator} />
-      <Item icon={<Trash2 {...ICON} />} label="移至回收站" shortcut="Del" danger onSelect={fileActions.trash} />
+      <Item icon={<Trash2 {...ICON} />} label={TRASH_LABEL} shortcut="Del" danger onSelect={fileActions.trash} />
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
 
 import { editActions, viewActions } from "../../lib/actions";
 import { isNeutral } from "../../lib/edits";
+import { keys } from "../../lib/platform";
 import type { ImageSource } from "../../lib/source";
 import { useEditState } from "../../store/edit";
 import { useLibrary } from "../../store/library";
@@ -28,7 +29,7 @@ function Tool(props: { label: string; tip?: string; onClick(): void; active?: bo
   return (
     <button
       className={styles.tool}
-      data-tip={props.tip}
+      data-tip={props.tip && keys(props.tip)}
       aria-label={props.label}
       data-active={props.active || undefined}
       disabled={props.disabled}

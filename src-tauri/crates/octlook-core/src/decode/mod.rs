@@ -8,6 +8,8 @@
 
 mod container;
 mod embedded;
+#[cfg(target_os = "macos")]
+mod imageio;
 mod psd;
 pub(crate) mod raster;
 pub mod stream;
@@ -192,7 +194,12 @@ fn os_codec(path: &Path) -> Result<RgbaImage> {
     wic::decode(path)
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+fn os_codec(path: &Path) -> Result<RgbaImage> {
+    imageio::decode(path)
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
 fn os_codec(path: &Path) -> Result<RgbaImage> {
     Err(Error::Unsupported(format!("{}（需要系统解码器）", path.display())))
 }

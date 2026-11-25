@@ -46,6 +46,18 @@ pub fn run() {
                 }
             }
         })
-        .run(tauri::generate_context!())
-        .expect("failed to start OctLook");
+        .build(tauri::generate_context!())
+        .expect("failed to start OctLook")
+        .run(|_app, _event| {
+            // Finder opens documents with an Apple Event, not argv; this one also
+            // arrives while the app is already running.
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Opened { urls } = _event {
+                use tauri::Emitter;
+                if let Some(path) = urls.iter().find_map(|url| url.to_file_path().ok()) {
+                    _app.state::<commands::LaunchPath>().set(path.clone());
+                    let _ = _app.emit("open-path", path);
+                }
+            }
+        });
 }

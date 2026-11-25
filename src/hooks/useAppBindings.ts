@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
+import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import { editActions, fileActions, viewActions, windowActions } from "../lib/actions";
 import { api } from "../lib/ipc";
+import { isMac, primaryKey } from "../lib/platform";
 import { useEditState } from "../store/edit";
 import { useLibrary } from "../store/library";
 import { useViewState } from "../store/view";
 
 type Binding = [match: (e: KeyboardEvent) => boolean, run: () => unknown];
 
+/** `ctrl` means the platform's primary modifier: ⌘ on macOS. */
 const key = (k: string, mods: { ctrl?: boolean; shift?: boolean } = {}) => (e: KeyboardEvent) =>
-  e.key.toLowerCase() === k.toLowerCase() && e.ctrlKey === !!mods.ctrl && (mods.shift === undefined || e.shiftKey === mods.shift);
+  e.key.toLowerCase() === k.toLowerCase() && primaryKey(e) === !!mods.ctrl && (mods.shift === undefined || e.shiftKey === mods.shift);
 const any = (...ms: ((e: KeyboardEvent) => boolean)[]) => (e: KeyboardEvent) => ms.some((m) => m(e));
 
 const library = () => useLibrary.getState();
@@ -53,7 +56,8 @@ const BINDINGS: Binding[] = [
   [key("o"), editActions.extractText],
   [key("e", { ctrl: true }), fileActions.reveal],
   // While annotating, Delete only ever removes annotations, never the file.
-  [key("Delete"), () => (useEditState.getState().tool ? editActions.removeSelected() : fileActions.trash())],
+  // Mac keyboards label Backspace "delete"; elsewhere Backspace stays harmless.
+  [isMac ? any(key("Delete"), key("Backspace")) : key("Delete"), () => (useEditState.getState().tool ? editActions.removeSelected() : fileActions.trash())],
   [any(key("f"), key("F11")), windowActions.toggleFullscreen],
   [key("i"), () => view().togglePanel("info")],
   [key("t"), () => view().toggle("filmstrip")],
@@ -83,7 +87,8 @@ export function useKeyboard() {
       if (e.key === COMPARE_KEY && !isTyping(e)) useEditState.getState().set({ comparing });
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.altKey || e.metaKey || isTyping(e)) return;
+      // The secondary modifier (Ctrl on macOS, Win elsewhere) belongs to the system.
+      if (e.altKey || (isMac ? e.ctrlKey : e.metaKey) || isTyping(e)) return;
       const hit = BINDINGS.find(([match]) => match(e));
       if (!hit) return;
       e.preventDefault();
@@ -95,12 +100,17 @@ export function useKeyboard() {
   }, []);
 }
 
-/** Opens the file passed on the command line, once. */
+/**
+ * Opens the file the app was launched with (command line, or Finder before
+ * the page loaded), then every file Finder hands the running app (macOS).
+ */
 export function useLaunchPath() {
   useEffect(() => {
+    const unlisten = listen<string>("open-path", ({ payload }) => void fileActions.openPath(payload));
     void api.launchPath().then((path) => {
       if (path) void fileActions.openPath(path);
     });
+    return () => void unlisten.then((off) => off());
   }, []);
 }
 
