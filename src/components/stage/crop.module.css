@@ -1,0 +1,55 @@
+/* `--px` is one screen pixel in content space (the stage box is scaled). */
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Everything outside the rectangle is dimmed by one oversized shadow. */
+.shade {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.shade div {
+  position: absolute;
+  box-shadow: 0 0 0 100000px rgba(0, 0, 0, 0.58);
+}
+
+.box {
+  position: absolute;
+  pointer-events: auto;
+  cursor: move;
+  outline: var(--px) solid #fff;
+}
+/* Rule-of-thirds guides. */
+.box::before,
+.box::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.box::before {
+  inset: 0 calc(100% / 3);
+  border-inline: var(--px) solid rgba(255, 255, 255, 0.4);
+}
+.box::after {
+  inset: calc(100% / 3) 0;
+  border-block: var(--px) solid rgba(255, 255, 255, 0.4);
+}
+
+.handle {
+  position: absolute;
+  width: calc(11 * var(--px));
+  height: calc(11 * var(--px));
+  translate: -50% -50%;
+  border-radius: calc(3 * var(--px));
+  background: #fff;
+  box-shadow: 0 0 0 var(--px) rgba(0, 0, 0, 0.45);
+}
+/* A generous hit area around the small visual handle. */
+.handle::after {
+  content: "";
+  position: absolute;
+  inset: calc(-7 * var(--px));
+}

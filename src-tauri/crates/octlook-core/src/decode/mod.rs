@@ -11,6 +11,7 @@ mod embedded;
 mod psd;
 pub(crate) mod raster;
 pub mod stream;
+mod svg;
 #[cfg(windows)]
 mod wic;
 
@@ -103,12 +104,13 @@ pub fn decode(path: &Path, purpose: Purpose) -> Result<Decoded> {
     let decoded = match format {
         Format::Native(name) => match purpose {
             Purpose::View => Decoded::new(format, Payload::Native, Source::Full),
-            // SVG / AVIF thumbnails are rasterised by the WebView instead.
-            Purpose::Thumbnail if matches!(name, "SVG" | "AVIF") => Decoded::new(format, Payload::Native, Source::Full),
+            // AVIF thumbnails are rasterised by the WebView instead.
+            Purpose::Thumbnail if name == "AVIF" => Decoded::new(format, Payload::Native, Source::Full),
             Purpose::Thumbnail => {
                 Decoded::new(format, Payload::Pixels(raster::open(path)?), Source::Full).orientation(meta::orientation(path))
             }
         },
+        Format::Svg => Decoded::new(format, Payload::Native, Source::Full),
         Format::Pdf => Decoded::new(format, Payload::Pdf(pdf_bytes(purpose, || std::fs::read(path))?), Source::Full),
         Format::Ai { pdf: true } if purpose == Purpose::View => {
             Decoded::new(format, Payload::Pdf(std::fs::read(path)?), Source::Full)

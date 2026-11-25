@@ -6,7 +6,6 @@
   padding: 14px 16px;
   border-radius: var(--radius-l);
   background: var(--glass-strong);
-  backdrop-filter: blur(18px);
   box-shadow: var(--shadow);
   z-index: 95;
   animation: rise 260ms var(--ease) both;

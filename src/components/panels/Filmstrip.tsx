@@ -1,10 +1,12 @@
 import { memo, useEffect, useRef, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 import { useAsync } from "../../hooks/useAsync";
 import { useElementSize } from "../../hooks/useElementSize";
 import type { FileEntry } from "../../lib/ipc";
 import { getThumbnail } from "../../lib/thumbs";
 import { useLibrary } from "../../store/library";
+import { useViewState } from "../../store/view";
 import styles from "./Filmstrip.module.css";
 
 const ITEM = 64;
@@ -24,6 +26,25 @@ const Thumb = memo(function Thumb({ entry }: { entry: FileEntry }) {
   return <span className={styles.ext} data-pending={url === undefined || undefined}>{extension(entry.name)}</span>;
 });
 
+/** Drawer tab on the strip's top-left edge; it stays at the window's bottom-left while the strip is hidden. */
+export function FilmstripToggle() {
+  const shown = useViewState((s) => s.filmstrip);
+  const label = shown ? "收起缩略图栏" : "展开缩略图栏";
+  return (
+    <button
+      className={styles.toggle}
+      aria-label={label}
+      aria-expanded={shown}
+      data-tip={`${label}  T`}
+      data-tip-align="start"
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={() => useViewState.getState().toggle("filmstrip")}
+    >
+      {shown ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+    </button>
+  );
+}
+
 /** Virtualised horizontal strip: only visible thumbnails are mounted. */
 export function Filmstrip() {
   const entries = useLibrary((s) => s.entries);
@@ -31,7 +52,8 @@ export function Filmstrip() {
   const go = useLibrary((s) => s.go);
   const ref = useRef<HTMLDivElement>(null);
   const [width] = useElementSize(ref);
-  const [scroll, setScroll] = useState(0);
+  // Tracked per item, not per pixel: scrolling re-renders only when the window shifts.
+  const [lead, setLead] = useState(0);
 
   // Keep the current item centred.
   useEffect(() => {
@@ -51,12 +73,12 @@ export function Filmstrip() {
     return () => el.removeEventListener("wheel", onWheel);
   }, []);
 
-  const first = Math.max(0, Math.floor((scroll - PAD) / STRIDE) - OVERSCAN);
-  const last = Math.min(entries.length, Math.ceil((scroll + width) / STRIDE) + OVERSCAN);
+  const first = Math.max(0, lead - OVERSCAN);
+  const last = Math.min(entries.length, lead + Math.ceil(width / STRIDE) + 1 + OVERSCAN);
   const total = PAD * 2 + entries.length * STRIDE - GAP;
 
   return (
-    <nav ref={ref} className={styles.strip} onScroll={(e) => setScroll(e.currentTarget.scrollLeft)}>
+    <nav ref={ref} className={styles.strip} onScroll={(e) => setLead(Math.floor(Math.max(0, e.currentTarget.scrollLeft - PAD) / STRIDE))}>
       <div className={styles.track} style={{ width: total }}>
         {entries.slice(first, last).map((entry, i) => {
           const at = first + i;

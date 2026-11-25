@@ -4,8 +4,8 @@
   color-scheme: dark;
   --bg: #0b0b0d;
   --bg-raised: #131316;
-  --glass: rgba(22, 22, 26, 0.72);
-  --glass-strong: rgba(28, 28, 33, 0.9);
+  --glass: rgba(24, 24, 28, 0.97);
+  --glass-strong: rgba(30, 30, 35, 0.98);
   --line: rgba(255, 255, 255, 0.07);
   --line-strong: rgba(255, 255, 255, 0.13);
   --hover: rgba(255, 255, 255, 0.06);
@@ -15,15 +15,27 @@
   --text-3: #63636c;
   --accent: #6e8bff;
   --accent-soft: rgba(110, 139, 255, 0.16);
-  --accent-grad: linear-gradient(120deg, #5b8cff 0%, #8f6bff 55%, #ff7ac6 100%);
+  /* Selected toggles and segments: tinted, never a white block on the dark UI. */
+  --selected-bg: rgba(110, 139, 255, 0.2);
+  --selected-fg: #aebdff;
+  --accent-grad: linear-gradient(120deg, #ffffff 0%, #a9adbd 100%);
   --danger: #e5484d;
-  --shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--line);
+  --shadow: 0 0 0 1px var(--line-strong), 0 2px 8px -2px rgba(0, 0, 0, 0.4);
   --checker-a: #1a1a1e;
   --checker-b: #232328;
+  /* Floating surfaces (menus, tool bars, tooltips): flat, near-opaque, outlined, so text never sinks into the image behind. */
+  --float-bg: var(--glass-strong);
+  --float-edge: rgba(255, 255, 255, 0.1);
+  --float-text: #f5f5f7;
+  --float-icon: #c2c2ca;
+  --float-muted: #8f8f99;
+  --float-hover: rgba(255, 255, 255, 0.09);
+  --float-line: rgba(255, 255, 255, 0.08);
+  --float-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.4);
 
-  --radius-s: 6px;
-  --radius: 10px;
-  --radius-l: 14px;
+  --radius-s: 4px;
+  --radius: 6px;
+  --radius-l: 8px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --dur: 180ms;
   --titlebar: 40px;
@@ -32,26 +44,35 @@
   --mono: "Cascadia Code", "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: light;
-    --bg: #f4f4f6;
-    --bg-raised: #ffffff;
-    --glass: rgba(255, 255, 255, 0.76);
-    --glass-strong: rgba(255, 255, 255, 0.94);
-    --line: rgba(0, 0, 0, 0.07);
-    --line-strong: rgba(0, 0, 0, 0.13);
-    --hover: rgba(0, 0, 0, 0.05);
-    --press: rgba(0, 0, 0, 0.09);
-    --text: #18181b;
-    --text-2: #52525b;
-    --text-3: #a1a1aa;
-    --accent: #3e63dd;
-    --accent-soft: rgba(62, 99, 221, 0.12);
-    --shadow: 0 12px 40px -16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--line);
-    --checker-a: #ffffff;
-    --checker-b: #ececef;
-  }
+/* Set by `useTheme`, which resolves the "follow system" preference. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f4f6;
+  --bg-raised: #ffffff;
+  --glass: rgba(255, 255, 255, 0.97);
+  --glass-strong: rgba(255, 255, 255, 0.98);
+  --line: rgba(0, 0, 0, 0.07);
+  --line-strong: rgba(0, 0, 0, 0.13);
+  --hover: rgba(0, 0, 0, 0.05);
+  --press: rgba(0, 0, 0, 0.09);
+  --text: #18181b;
+  --text-2: #52525b;
+  --text-3: #a1a1aa;
+  --accent: #3e63dd;
+  --accent-soft: rgba(62, 99, 221, 0.12);
+  --selected-bg: rgba(62, 99, 221, 0.12);
+  --selected-fg: #3e63dd;
+  --accent-grad: linear-gradient(120deg, #18181b 0%, #7b7f90 100%);
+  --shadow: 0 0 0 1px var(--line-strong), 0 2px 8px -2px rgba(0, 0, 0, 0.1);
+  --checker-a: #ffffff;
+  --checker-b: #ececef;
+  --float-edge: rgba(0, 0, 0, 0.1);
+  --float-text: #111114;
+  --float-icon: #3f3f46;
+  --float-muted: #71717a;
+  --float-hover: rgba(0, 0, 0, 0.055);
+  --float-line: rgba(0, 0, 0, 0.08);
+  --float-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1);
 }
 
 *,
@@ -87,6 +108,32 @@ button {
   cursor: pointer;
 }
 
+input[type="range"] {
+  appearance: none;
+  height: 16px;
+  margin: 0;
+  background: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 3px;
+  background: var(--line-strong);
+}
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: scale var(--dur) var(--ease);
+}
+input[type="range"]:hover::-webkit-slider-thumb {
+  scale: 1.15;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -98,14 +145,15 @@ button {
 }
 ::-webkit-scrollbar-thumb {
   background: var(--line-strong);
-  border-radius: 8px;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* Tooltip for any element carrying data-tip. */
-[data-tip] {
+/* Tooltip for any element carrying data-tip. Zero specificity: an element
+   positioned by its own styles (absolute, fixed…) keeps that position. */
+:where([data-tip]) {
   position: relative;
 }
 [data-tip]:hover::after {
@@ -116,9 +164,11 @@ button {
   transform: translateX(-50%);
   padding: 5px 8px;
   border-radius: var(--radius-s);
-  background: var(--glass-strong);
-  box-shadow: var(--shadow);
-  color: var(--text);
+  background: var(--float-bg);
+  box-shadow:
+    0 0 0 1px var(--float-edge),
+    var(--float-shadow);
+  color: var(--float-text);
   font-size: 11.5px;
   white-space: nowrap;
   pointer-events: none;
@@ -128,6 +178,11 @@ button {
 [data-tip-side="bottom"]:hover::after {
   bottom: auto;
   top: calc(100% + 10px);
+}
+/* Anchored to the element's left edge, for controls at the window's left border. */
+[data-tip-align="start"]:hover::after {
+  left: 0;
+  transform: none;
 }
 
 @keyframes tip-in {

@@ -6,7 +6,7 @@ use std::io::{Read, Seek, SeekFrom};
 
 use image::RgbaImage;
 
-use super::{decode_bytes, psd, Decoded, Purpose};
+use super::{decode_bytes, psd, svg, Decoded, Purpose};
 use crate::{
     format::{self, Format},
     thumbnail, Error, Result,
@@ -49,6 +49,9 @@ pub fn thumbnail<R: Read + Seek>(r: &mut R, ext: &str, size: u32) -> Result<Rgba
     }
     let mut buf = Vec::with_capacity(len as usize);
     r.read_to_end(&mut buf)?;
+    if format == Format::Svg {
+        return svg::render(&buf, size); // vectors are drawn at the requested size directly
+    }
     fit(decode_bytes(&buf, format, purpose)?, size)
 }
 

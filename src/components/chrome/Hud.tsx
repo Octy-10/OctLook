@@ -1,43 +1,35 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
-  FlipHorizontal2,
-  GalleryHorizontalEnd,
-  Grid2x2,
-  Info,
-  Minus,
-  Moon,
+  Crop,
+  PenLine,
   Pipette,
-  Plus,
-  RotateCcw,
   RotateCw,
-  Scan,
-  Sun,
-  Trash2,
+  Save,
+  ScanText,
+  SlidersHorizontal,
+  Undo2,
 } from "lucide-react";
 
-import { fileActions, viewActions } from "../../lib/actions";
+import { editActions, viewActions } from "../../lib/actions";
+import { isNeutral } from "../../lib/edits";
 import type { ImageSource } from "../../lib/source";
+import { useEditState } from "../../store/edit";
 import { useLibrary } from "../../store/library";
-import { useViewState, type Backdrop } from "../../store/view";
+import { useViewState } from "../../store/view";
 import styles from "./Hud.module.css";
 
 const ICON = { size: 16, strokeWidth: 1.75 };
-const BACKDROP_ICON: Record<Backdrop, ReactNode> = {
-  dark: <Moon {...ICON} />,
-  light: <Sun {...ICON} />,
-  checker: <Grid2x2 {...ICON} />,
-};
-const BACKDROP_LABEL: Record<Backdrop, string> = { dark: "深色", light: "浅色", checker: "透明网格" };
 
-function Tool(props: { tip: string; onClick(): void; active?: boolean; disabled?: boolean; children: ReactNode }) {
+function Tool(props: { label: string; tip?: string; onClick(): void; active?: boolean; disabled?: boolean; children: ReactNode }) {
   return (
     <button
       className={styles.tool}
       data-tip={props.tip}
+      aria-label={props.label}
       data-active={props.active || undefined}
       disabled={props.disabled}
       onClick={props.onClick}
@@ -49,73 +41,81 @@ function Tool(props: { tip: string; onClick(): void; active?: boolean; disabled?
 
 const Divider = () => <span className={styles.divider} />;
 
-/** Floating, auto-hiding control capsule. */
+/**
+ * Floating, auto-hiding control capsule. It carries only the primary tools;
+ * the settings menu and the zoom level live in the title bar.
+ */
 export function Hud({ source, hidden }: { source: ImageSource | null; hidden: boolean }) {
-  const { view, page, backdrop, picker, info, filmstrip, toggle, cycleBackdrop, setPage } = useViewState();
+  // Narrow selectors: the capsule must not re-render on every pan frame.
+  const turned = useViewState((s) => s.view.rotation !== 0 || s.view.flipX || s.view.flipY);
+  const page = useViewState((s) => s.page);
+  const picker = useViewState((s) => s.picker);
+  const panel = useViewState((s) => s.panel);
+  const { toggle, togglePanel, setPage } = useViewState.getState();
+  const cropping = useEditState((s) => s.draft !== null);
+  const annotating = useEditState((s) => s.tool !== null);
+  const edited = useEditState((s) => s.crop !== null || s.annotations.length > 0 || !isNeutral(s.adjust)) || turned;
   const step = useLibrary((s) => s.step);
   const single = useLibrary((s) => s.entries.length < 2);
   const pages = source?.kind === "pdf" ? source.pages : 1;
+  // Never fades out from under a pointer resting on it.
+  const [hovered, setHovered] = useState(false);
 
   return (
-    <div className={styles.hud} data-hidden={hidden || undefined} onPointerDown={(e) => e.stopPropagation()}>
-      <Tool tip="上一张  ←" onClick={() => step(-1)} disabled={single}>
+    <div
+      className={styles.hud}
+      data-hidden={(hidden && !hovered) || undefined}
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <Tool label="上一张" tip="上一张  ←" onClick={() => step(-1)} disabled={single}>
         <ChevronLeft {...ICON} />
       </Tool>
       <Divider />
-      <Tool tip="缩小  −" onClick={viewActions.zoomOut}>
-        <Minus {...ICON} />
-      </Tool>
-      <button className={styles.zoom} data-tip={view.fit ? "实际大小  1" : "适应窗口  0"} onClick={viewActions.toggleFit}>
-        {Math.round(view.scale * 100)}%
-      </button>
-      <Tool tip="放大  +" onClick={viewActions.zoomIn}>
-        <Plus {...ICON} />
-      </Tool>
-      <Tool tip="适应窗口  0" onClick={viewActions.fit} active={view.fit}>
-        <Scan {...ICON} />
-      </Tool>
-      <Divider />
-      <Tool tip="向左旋转  Shift R" onClick={() => viewActions.rotate(-1)}>
-        <RotateCcw {...ICON} />
-      </Tool>
-      <Tool tip="向右旋转  R" onClick={() => viewActions.rotate(1)}>
+      <Tool label="旋转" tip="旋转  R" onClick={() => viewActions.rotate(1)}>
         <RotateCw {...ICON} />
       </Tool>
-      <Tool tip="水平翻转  H" onClick={viewActions.flipX} active={view.flipX}>
-        <FlipHorizontal2 {...ICON} />
+      <Tool label="裁剪" tip="裁剪  X" onClick={editActions.toggleCrop} active={cropping}>
+        <Crop {...ICON} />
       </Tool>
+      <Tool label="标注" tip="标注  A" onClick={editActions.toggleAnnotate} active={annotating}>
+        <PenLine {...ICON} />
+      </Tool>
+      <Tool label="调色" tip="调色  E" onClick={() => togglePanel("edit")} active={panel === "edit"}>
+        <SlidersHorizontal {...ICON} />
+      </Tool>
+      <Tool label="取色器" tip="取色器  C" onClick={() => toggle("picker")} active={picker}>
+        <Pipette {...ICON} />
+      </Tool>
+      <Tool label="提取文字" tip="提取文字  O" onClick={editActions.extractText} active={panel === "text"}>
+        <ScanText {...ICON} />
+      </Tool>
+      {edited && (
+        <Tool label="重置全部编辑" tip="重置全部编辑  Ctrl R" onClick={editActions.reset}>
+          <Undo2 {...ICON} />
+        </Tool>
+      )}
       {pages > 1 && (
         <>
           <Divider />
-          <Tool tip="上一页  ↑" onClick={() => setPage(page - 1)} disabled={page <= 1}>
+          <Tool label="上一页" tip="上一页  ↑" onClick={() => setPage(page - 1)} disabled={page <= 1}>
             <ChevronUp {...ICON} />
           </Tool>
           <span className={styles.pages}>
             {Math.min(page, pages)} / {pages}
           </span>
-          <Tool tip="下一页  ↓" onClick={() => setPage(page + 1)} disabled={page >= pages}>
+          <Tool label="下一页" tip="下一页  ↓" onClick={() => setPage(page + 1)} disabled={page >= pages}>
             <ChevronDown {...ICON} />
           </Tool>
         </>
       )}
       <Divider />
-      <Tool tip="取色器  C" onClick={() => toggle("picker")} active={picker}>
-        <Pipette {...ICON} />
-      </Tool>
-      <Tool tip={`背景：${BACKDROP_LABEL[backdrop]}  B`} onClick={cycleBackdrop}>
-        {BACKDROP_ICON[backdrop]}
-      </Tool>
-      <Tool tip="文件信息  I" onClick={() => toggle("info")} active={info}>
-        <Info {...ICON} />
-      </Tool>
-      <Tool tip="缩略图栏  T" onClick={() => toggle("filmstrip")} active={filmstrip}>
-        <GalleryHorizontalEnd {...ICON} />
-      </Tool>
-      <Tool tip="移至回收站  Del" onClick={fileActions.trash}>
-        <Trash2 {...ICON} />
+      <Tool label="导出" tip="导出  Ctrl S" onClick={editActions.export}>
+        <Save {...ICON} />
       </Tool>
       <Divider />
-      <Tool tip="下一张  →" onClick={() => step(1)} disabled={single}>
+      <Tool label="下一张" tip="下一张  →" onClick={() => step(1)} disabled={single}>
         <ChevronRight {...ICON} />
       </Tool>
     </div>

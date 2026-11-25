@@ -5,7 +5,7 @@ description = "OctLook — a fast image viewer for designers"
 edition = "2021"
 license = "GPL-3.0-only"
 repository = "https://github.com/Octy-10/OctLook"
-rust-version = "1.80"
+rust-version = "1.88"
 
 [lib]
 name = "octlook_lib"
@@ -16,6 +16,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 octlook-core = { path = "crates/octlook-core" }
+octlook-ocr = { path = "crates/octlook-ocr" }
 tauri = { version = "2", features = ["protocol-asset"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
@@ -36,7 +37,7 @@ windows-registry = "0.6"
 windows = { version = "0.62", features = ["Win32_UI_Shell"] }
 
 [workspace]
-members = ["crates/octlook-core", "crates/octlook-shell"]
+members = ["crates/octlook-core", "crates/octlook-ocr", "crates/octlook-shell"]
 
 [profile.release]
 opt-level = 3

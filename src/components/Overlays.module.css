@@ -12,7 +12,7 @@
   display: grid;
   place-content: center;
   text-align: center;
-  border-radius: 18px;
+  border-radius: var(--radius-l);
   border: 1.5px dashed var(--accent);
   background: var(--accent-soft);
 }
@@ -29,9 +29,9 @@
 
 .toaster {
   position: fixed;
-  top: calc(var(--titlebar) + 14px);
-  left: 50%;
-  translate: -50% 0;
+  top: calc(var(--titlebar) + 64px); /* below the stage's contextual tool bar */
+  left: 0;
+  right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -43,7 +43,6 @@
   padding: 8px 14px;
   border-radius: 999px;
   background: var(--glass-strong);
-  backdrop-filter: blur(16px);
   box-shadow: var(--shadow);
   font-size: 12.5px;
   animation: drop-in 220ms var(--ease) both;

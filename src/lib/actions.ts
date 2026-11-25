@@ -3,13 +3,18 @@
  * They read/write the stores directly so callers stay declarative.
  */
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { open as openDialog } from "@tauri-apps/plugin-dialog";
+import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 
+import { useEditState } from "../store/edit";
 import { useLibrary } from "../store/library";
+import { useTextState } from "../store/text";
 import { toast } from "../store/toast";
 import { useViewState } from "../store/view";
+import { finalizeCrop, fullCrop } from "./crop";
 import { api, errorMessage } from "./ipc";
+import { encodeCanvas, EXPORT_FORMATS, renderEdited } from "./render";
+import { getSurface } from "./surface";
 import { forgetThumbnail } from "./thumbs";
 import { stepScale, zoomAt, type View } from "./viewport";
 
@@ -74,6 +79,103 @@ export const fileActions = {
     if (!path) return;
     await navigator.clipboard.writeText(path);
     toast("已复制文件路径");
+  },
+};
+
+/** OCR input is capped: larger scans cost seconds without reading better. */
+const OCR_MAX_EDGE = 4000;
+
+const edit = () => useEditState.getState();
+
+export const editActions = {
+  /** Opens the crop tool on the whole image, starting from the applied crop. */
+  beginCrop() {
+    const surface = getSurface();
+    if (!surface) return;
+    edit().set({ draft: edit().crop ?? fullCrop(surface.width, surface.height), aspect: null, tool: null, selected: null, editing: null });
+    viewActions.fit();
+  },
+  applyCrop() {
+    const surface = getSurface();
+    const { draft } = edit();
+    if (!surface || !draft) return;
+    edit().set({ crop: finalizeCrop(draft, surface.width, surface.height), draft: null });
+    viewActions.fit();
+  },
+  cancelCrop() {
+    edit().set({ draft: null });
+    viewActions.fit();
+  },
+  toggleCrop: () => (edit().draft ? editActions.cancelCrop() : editActions.beginCrop()),
+
+  /** Opens the annotation bar (text tool first) or closes it. */
+  toggleAnnotate() {
+    if (!getSurface()) return;
+    if (edit().draft) editActions.cancelCrop();
+    edit().set({ tool: edit().tool ? null : "text", selected: null, editing: null });
+  },
+  removeSelected() {
+    edit().checkpoint();
+    const { annotations, selected } = edit();
+    edit().set({ annotations: annotations.filter((a) => a.id !== selected), selected: null, editing: null });
+  },
+
+  toggleSplit: () => edit().set({ split: edit().split === null ? 0.5 : null }),
+
+  /** Back to the file as opened: colour, crop, annotations, rotation and flips. */
+  reset() {
+    edit().reset();
+    setView((v) => ({ ...v, rotation: 0, flipX: false, flipY: false, fit: true }));
+  },
+
+  /** Saves the edited image to a new file; the original is never overwritten. */
+  async export() {
+    const path = currentPath();
+    if (!path || !getSurface()) return;
+    const { format, quality, maxEdge } = edit().exportOptions;
+    const { label, extension, lossy } = EXPORT_FORMATS[format];
+    const target = await saveDialog({
+      defaultPath: `${path.replace(/\.[^.\\/]+$/, "")}_edited.${extension}`,
+      filters: [{ name: label, extensions: [extension] }],
+    });
+    if (!target) return;
+    try {
+      const canvas = await renderEdited({ maxEdge, background: format === "jpeg" ? "#fff" : undefined });
+      await api.writeFile(target, await encodeCanvas(canvas, format, lossy ? quality : undefined));
+      toast(`已导出 ${canvas.width} × ${canvas.height} ${label}`);
+    } catch (e) {
+      toast(errorMessage(e), "error");
+    }
+  },
+
+  async copyImage() {
+    if (!getSurface()) return;
+    try {
+      // The promise form keeps the clipboard write inside the user gesture.
+      const png = renderEdited().then((canvas) => encodeCanvas(canvas));
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
+      toast("已复制图像");
+    } catch (e) {
+      toast(errorMessage(e), "error");
+    }
+  },
+
+  /** Embedded text for vector documents, OCR for everything else. */
+  async extractText() {
+    const surface = getSurface();
+    if (!surface) return;
+    const text = useTextState.getState();
+    const job = text.begin();
+    useViewState.getState().setPanel("text");
+    try {
+      const embedded = (await surface.text?.())?.trim();
+      const found =
+        embedded ||
+        (await api.recognizeText(await renderEdited({ maxEdge: OCR_MAX_EDGE, background: "#fff" })));
+      text.settle(job, { phase: "done", text: found, origin: embedded ? "embedded" : "ocr" });
+    } catch (e) {
+      text.settle(job, { phase: "failed", message: errorMessage(e) });
+    }
   },
 };
 

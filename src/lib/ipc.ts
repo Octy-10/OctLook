@@ -61,6 +61,24 @@ export const api = {
   moveToTrash: (path: string) => invoke<void>("move_to_trash", { path }),
   launchPath: () => invoke<string | null>("launch_path"),
   supportedExtensions: () => invoke<string[]>("supported_extensions"),
+  /** Text in the canvas, recognised offline (PP-OCRv5). Body layout `[RGBA pixels][u32 LE width]`. */
+  recognizeText(canvas: HTMLCanvasElement) {
+    const { width, height } = canvas;
+    const pixels = canvas.getContext("2d")!.getImageData(0, 0, width, height).data;
+    const body = new Uint8Array(pixels.length + 4);
+    body.set(pixels);
+    new DataView(body.buffer).setUint32(pixels.length, width, true);
+    return invoke<string>("recognize_text", body);
+  },
+  /** Body layout `[data][UTF-8 path][u32 LE path length]` — see `wire::split_path`. */
+  async writeFile(path: string, data: Blob) {
+    const tail = new TextEncoder().encode(path);
+    const body = new Uint8Array(data.size + tail.length + 4);
+    body.set(new Uint8Array(await data.arrayBuffer()));
+    body.set(tail, data.size);
+    new DataView(body.buffer).setUint32(body.length - 4, tail.length, true);
+    await invoke<void>("write_file", body);
+  },
 };
 
 /** URL the WebView can load directly through Tauri's asset protocol. */

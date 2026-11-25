@@ -41,12 +41,42 @@
   color: var(--text-3);
 }
 
+/* Zoom read-out: out of the canvas, one click toggles fit ↔ 100 %. */
+.zoom {
+  flex: none;
+  min-width: 52px;
+  height: 22px;
+  margin-left: 6px;
+  padding: 0 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-s);
+  font: 500 11.5px var(--mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  color: var(--text-2);
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.zoom:hover {
+  border-color: var(--text-3);
+  background: var(--hover);
+  color: var(--text);
+}
+
 .caption {
   justify-self: end;
   display: flex;
   height: 100%;
 }
-.caption button {
+/* Positions the settings menu below its toggle. */
+.anchor {
+  position: relative;
+  height: 100%;
+}
+.caption > button,
+.anchor > button {
   display: grid;
   place-items: center;
   width: 46px;
@@ -54,14 +84,17 @@
   color: var(--text-2);
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
-.caption button:hover {
+.caption > button:hover,
+.anchor > button:hover,
+.anchor > button[data-active] {
   background: var(--hover);
   color: var(--text);
 }
-.caption button:active {
+.caption > button:active,
+.anchor > button:active {
   background: var(--press);
 }
-.caption svg {
+.caption > button svg {
   width: 10px;
   height: 10px;
   fill: none;

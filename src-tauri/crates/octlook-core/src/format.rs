@@ -7,6 +7,8 @@ use std::{fs::File, io::Read, path::Path};
 pub enum Format {
     /// Decoded by the WebView itself (Chromium codecs).
     Native(&'static str),
+    /// Shown by the WebView; rasterised in Rust only for Explorer thumbnails.
+    Svg,
     Pdf,
     /// Illustrator: PDF-compatible (`pdf == true`) or legacy PostScript.
     Ai { pdf: bool },
@@ -29,7 +31,7 @@ const TABLE: &[(&str, Format)] = &[
     ("jpg", Format::Native("JPEG")), ("jpeg", Format::Native("JPEG")), ("jfif", Format::Native("JPEG")),
     ("png", Format::Native("PNG")), ("apng", Format::Native("APNG")), ("gif", Format::Native("GIF")),
     ("webp", Format::Native("WebP")), ("avif", Format::Native("AVIF")), ("bmp", Format::Native("BMP")),
-    ("ico", Format::Native("ICO")), ("svg", Format::Native("SVG")),
+    ("ico", Format::Native("ICO")), ("svg", Format::Svg),
     ("tif", Format::Raster("TIFF")), ("tiff", Format::Raster("TIFF")), ("tga", Format::Raster("TGA")),
     ("dds", Format::Raster("DDS")), ("hdr", Format::Raster("HDR")), ("exr", Format::Raster("OpenEXR")),
     ("qoi", Format::Raster("QOI")), ("pbm", Format::Raster("PBM")), ("pgm", Format::Raster("PGM")),
@@ -86,12 +88,13 @@ pub fn from_extension(ext: &str, head: &[u8]) -> Option<Format> {
 impl Format {
     /// Formats whose preview needs neither a file path nor an OS codec.
     pub fn decodes_from_bytes(self) -> bool {
-        matches!(self, Format::Psd | Format::Ai { .. } | Format::Eps | Format::Cdr | Format::Indd | Format::Affinity | Format::ZipPreview(_))
+        matches!(self, Format::Svg | Format::Psd | Format::Ai { .. } | Format::Eps | Format::Cdr | Format::Indd | Format::Affinity | Format::ZipPreview(_))
     }
 
     pub fn label(self) -> &'static str {
         match self {
             Format::Native(n) | Format::Raster(n) | Format::OsCodec(n) | Format::ZipPreview(n) => n,
+            Format::Svg => "SVG",
             Format::Pdf => "PDF",
             Format::Ai { .. } => "Adobe Illustrator",
             Format::Psd => "Photoshop",

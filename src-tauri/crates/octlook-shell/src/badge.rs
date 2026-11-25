@@ -65,6 +65,7 @@ pub fn apply(img: &mut RgbaImage, ext: &str) {
 fn family_color(ext: &str) -> [u8; 3] {
     match format::from_extension(ext, b"") {
         Some(Format::Psd) => [0x1F, 0x6F, 0xEB],
+        Some(Format::Svg) => [0xE8, 0x8A, 0x1A],
         Some(Format::Ai { .. } | Format::Eps) => [0xE0, 0x7A, 0x00],
         Some(Format::Cdr) => [0x2B, 0x93, 0x48],
         Some(Format::Indd) => [0xD0, 0x31, 0x6A],

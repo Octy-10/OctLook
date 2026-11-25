@@ -48,7 +48,10 @@
       "icons/icon.ico"
     ],
     "resources": {
-      "target/release/octlook_shell.dll": "octlook_shell.dll"
+      "target/release/octlook_shell.dll": "octlook_shell.dll",
+      "resources/ocr/det.onnx": "ocr/det.onnx",
+      "resources/ocr/rec.onnx": "ocr/rec.onnx",
+      "resources/ocr/dict.txt": "ocr/dict.txt"
     },
     "windows": {
       "nsis": {

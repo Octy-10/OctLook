@@ -1,7 +1,12 @@
+import { useCallback, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { Settings } from "lucide-react";
 
+import { viewActions } from "../../lib/actions";
 import { useLibrary } from "../../store/library";
+import { useViewState } from "../../store/view";
 import { Logo } from "../Logo";
+import { SettingsMenu } from "./SettingsMenu";
 import styles from "./TitleBar.module.css";
 
 const win = getCurrentWindow();
@@ -11,12 +16,21 @@ export function TitleBar({ maximized }: { maximized: boolean }) {
   const name = useLibrary((s) => s.entries[s.index]?.name);
   const index = useLibrary((s) => s.index);
   const total = useLibrary((s) => s.entries.length);
+  const zoom = useViewState((s) => Math.round(s.view.scale * 100));
+  const fit = useViewState((s) => s.view.fit);
+  const [menu, setMenu] = useState(false);
+  const closeMenu = useCallback(() => setMenu(false), []);
 
   return (
     <header className={styles.bar} data-tauri-drag-region>
       <div className={styles.brand} data-tauri-drag-region>
         <Logo size={16} />
         <span data-tauri-drag-region>OctLook</span>
+        {name && (
+          <button className={styles.zoom} data-tip={fit ? "实际大小  1" : "适应窗口  0"} data-tip-side="bottom" onClick={viewActions.toggleFit}>
+            {zoom}%
+          </button>
+        )}
       </div>
 
       <div className={styles.title} data-tauri-drag-region>
@@ -33,6 +47,12 @@ export function TitleBar({ maximized }: { maximized: boolean }) {
       </div>
 
       <div className={styles.caption}>
+        <div className={styles.anchor}>
+          <button aria-label="设置" data-tip={menu ? undefined : "设置"} data-tip-side="bottom" data-active={menu || undefined} onClick={() => setMenu((open) => !open)}>
+            <Settings size={15} strokeWidth={1.75} />
+          </button>
+          {menu && <SettingsMenu onClose={closeMenu} />}
+        </div>
         <button aria-label="最小化" onClick={() => win.minimize()}>
           <svg viewBox="0 0 10 10">
             <path d="M1 5h8" />

@@ -1,0 +1,95 @@
+/* Content-space box holding the annotation SVG and the in-place text editor. */
+.layer {
+  pointer-events: none;
+}
+.layer svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  user-select: none;
+}
+.layer svg[data-tool] {
+  pointer-events: auto;
+  cursor: crosshair;
+}
+.layer svg[data-tool="text"] {
+  cursor: text;
+}
+.layer svg[data-tool] [data-id] {
+  cursor: move;
+}
+/* Glyph counters and gaps between letters stay grabbable. */
+.layer svg[data-tool] text {
+  pointer-events: bounding-box;
+}
+
+.selection {
+  fill: #fff;
+  stroke: var(--accent);
+}
+.selection .outline {
+  fill: none;
+  pointer-events: none;
+}
+/* Invisible but hit-testable: a drag anywhere inside the selection moves it. */
+.selection .body {
+  fill: transparent;
+  stroke: none;
+}
+.selection [data-handle] {
+  cursor: grab;
+}
+
+/* Transparent glyphs over the SVG text: only the caret and selection show. */
+.editor {
+  position: absolute;
+  min-width: 2px;
+  transform-origin: 0 0;
+  white-space: pre;
+  color: transparent;
+  outline: none;
+  pointer-events: auto;
+  user-select: text;
+  cursor: text;
+}
+.editor::selection {
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.swatch {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 0 3px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  transition: scale var(--dur) var(--ease);
+}
+.swatch:hover {
+  scale: 1.15;
+}
+.swatch[data-active] {
+  box-shadow:
+    0 0 0 2px var(--glass-strong),
+    0 0 0 3.5px var(--text);
+}
+
+.size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--float-icon);
+}
+.size input {
+  width: 96px;
+}
+.size output {
+  min-width: 26px;
+  font: 11.5px var(--mono);
+  color: var(--text);
+}

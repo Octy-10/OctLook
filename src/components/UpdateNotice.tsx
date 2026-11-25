@@ -1,9 +1,10 @@
-import { useUpdater } from "../hooks/useUpdater";
+import { useUpdate } from "../store/update";
 import styles from "./UpdateNotice.module.css";
 
 export function UpdateNotice() {
-  const { state, install, dismiss } = useUpdater();
-  if (state.phase === "idle") return null;
+  const state = useUpdate((s) => s.state);
+  const { install, dismiss } = useUpdate.getState();
+  if (state.phase === "idle" || state.phase === "checking") return null;
 
   return (
     <aside className={styles.card} role="status">

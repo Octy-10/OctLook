@@ -6,6 +6,8 @@ pub enum Error {
     Image(#[from] image::ImageError),
     #[error("压缩包读取失败：{0}")]
     Zip(#[from] zip::result::ZipError),
+    #[error("SVG 解析失败：{0}")]
+    Svg(#[from] resvg::usvg::Error),
     #[error("文件已损坏或结构异常：{0}")]
     Corrupt(&'static str),
     #[error("不支持：{0}")]

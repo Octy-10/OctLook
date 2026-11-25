@@ -13,3 +13,6 @@ export function formatBytes(bytes: number): string {
 const dateFormat = new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium", timeStyle: "short" });
 
 export const formatDate = (millis: number) => dateFormat.format(millis);
+
+export const toHex = (r: number, g: number, b: number) =>
+  "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("").toUpperCase();

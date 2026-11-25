@@ -1,6 +1,7 @@
 mod commands;
 mod error;
 mod folder;
+mod ocr;
 #[cfg(windows)]
 mod shell_integration;
 mod thumbs;
@@ -22,12 +23,18 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(Arc::new(thumbs::Thumbnailer::new()))
         .manage(commands::LaunchPath::from_args())
+        .setup(|app| {
+            app.manage(Arc::new(ocr::Ocr::new(app.path().resource_dir()?.join("ocr"))));
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             commands::decode_image,
             commands::thumbnail,
             commands::list_folder,
             commands::file_info,
             commands::move_to_trash,
+            commands::write_file,
+            commands::recognize_text,
             commands::launch_path,
             commands::supported_extensions,
         ])

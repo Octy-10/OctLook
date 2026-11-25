@@ -1,18 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- OctLook: a single crescent moon on a night-dark tile. -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#1C1C21"/>
-      <stop offset="1" stop-color="#09090B"/>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1D1F27"/>
+      <stop offset="1" stop-color="#0B0C0F"/>
     </linearGradient>
-    <linearGradient id="iris" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#5B8CFF"/>
-      <stop offset="0.55" stop-color="#8F6BFF"/>
-      <stop offset="1" stop-color="#FF7AC6"/>
+    <linearGradient id="moon" x1="0.2" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#D9D5CA"/>
     </linearGradient>
+    <mask id="crescent">
+      <circle cx="520" cy="532" r="262" fill="#FFF"/>
+      <circle cx="626" cy="436" r="218" fill="#000"/>
+    </mask>
   </defs>
-  <rect x="64" y="64" width="896" height="896" rx="208" fill="url(#bg)"/>
-  <rect x="64.5" y="64.5" width="895" height="895" rx="207.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.08"/>
-  <polygon points="391,232 633,232 792,391 792,633 633,792 391,792 232,633 232,391" fill="none" stroke="#F4F4F5" stroke-width="44" stroke-linejoin="round"/>
-  <circle cx="512" cy="512" r="128" fill="url(#iris)"/>
-  <circle cx="560" cy="464" r="30" fill="#FFFFFF" fill-opacity="0.9"/>
+  <rect x="64" y="64" width="896" height="896" rx="212" fill="url(#night)"/>
+  <rect x="65" y="65" width="894" height="894" rx="211" fill="none" stroke="#FFF" stroke-opacity="0.08" stroke-width="2"/>
+  <rect x="230" y="240" width="600" height="600" fill="url(#moon)" mask="url(#crescent)"/>
 </svg>

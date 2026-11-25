@@ -1,0 +1,125 @@
+/* Contextual tool bar floating at the top of the stage (crop, annotate). */
+.bar {
+  position: absolute;
+  top: 12px;
+  /* Centred by layout, not translate(-50%): a half-pixel offset would blur every icon. */
+  left: 0;
+  right: 0;
+  width: max-content;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-width: calc(100% - 24px);
+  padding: 5px;
+  border-radius: var(--radius-l);
+  background: var(--float-bg);
+  box-shadow:
+    0 0 0 1px var(--float-edge),
+    var(--float-shadow);
+  cursor: default;
+  z-index: 12;
+  animation: bar-in 220ms var(--ease) both;
+}
+@keyframes bar-in {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: var(--radius-s);
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--float-icon);
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.chip:hover {
+  background: var(--float-hover);
+  color: var(--float-text);
+}
+.chip[data-active] {
+  background: var(--selected-bg);
+  color: var(--selected-fg);
+}
+
+/* Editable W × H read-out. */
+.size {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 2px;
+  font: 11.5px var(--mono);
+  color: var(--float-muted);
+}
+.number {
+  width: 56px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-s);
+  background: transparent;
+  font: 12px var(--mono);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--text);
+  outline: none;
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
+}
+.number:hover {
+  background: var(--hover);
+}
+/* One ring only: the accent border replaces the global focus outline. */
+.number:focus,
+.number:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--hover);
+}
+
+.divider {
+  flex: none;
+  width: 1px;
+  height: 16px;
+  margin: 0 5px;
+  background: var(--float-edge);
+}
+
+.action {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-s);
+  color: var(--float-icon);
+  transition: background var(--dur) var(--ease);
+}
+.action:hover:not(:disabled) {
+  background: var(--float-hover);
+  color: var(--float-text);
+}
+.action:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+/* The confirming action: solid accent, the one filled button in the bar. */
+.action[data-primary] {
+  background: var(--accent);
+  color: #fff;
+}
+.action[data-primary]:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+  filter: brightness(1.1);
+}

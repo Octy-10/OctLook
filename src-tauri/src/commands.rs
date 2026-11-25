@@ -6,11 +6,15 @@ use octlook_core::{
     decode::{self, Purpose},
     format, meta,
 };
-use tauri::{ipc::Response, State};
+use tauri::{
+    ipc::{InvokeBody, Request, Response},
+    State,
+};
 
 use crate::{
     error::{AppError, Result},
     folder,
+    ocr::Ocr,
     thumbs::Thumbnailer,
     wire,
 };
@@ -54,6 +58,24 @@ pub async fn file_info(path: PathBuf) -> Result<meta::FileInfo> {
 #[tauri::command]
 pub async fn move_to_trash(path: PathBuf) -> Result<()> {
     blocking(move || Ok(trash::delete(&path)?)).await
+}
+
+/// Writes an exported image to the path the user picked in the save dialog.
+#[tauri::command]
+pub async fn write_file(request: Request<'_>) -> Result<()> {
+    let InvokeBody::Raw(body) = request.body() else { return Err(AppError::BadRequest) };
+    let (bytes, path) = wire::split_path(body).ok_or(AppError::BadRequest)?;
+    let (bytes, path) = (bytes.to_vec(), path.to_path_buf());
+    blocking(move || Ok(std::fs::write(path, bytes)?)).await
+}
+
+/// Recognises the text in an image sent as `[RGBA pixels][width: u32 LE]`.
+#[tauri::command]
+pub async fn recognize_text(request: Request<'_>, ocr: State<'_, Arc<Ocr>>) -> Result<String> {
+    let InvokeBody::Raw(body) = request.body() else { return Err(AppError::BadRequest) };
+    let (pixels, width) = wire::split_u32(body).ok_or(AppError::BadRequest)?;
+    let (pixels, ocr) = (pixels.to_vec(), Arc::clone(&ocr));
+    blocking(move || ocr.text(&pixels, width as usize)).await
 }
 
 #[tauri::command]

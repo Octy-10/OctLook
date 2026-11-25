@@ -1,7 +1,9 @@
+import type { PointerEvent } from "react";
 import { FileWarning, FolderSearch } from "lucide-react";
 
 import type { Probe } from "../../hooks/useColorProbe";
 import { fileActions } from "../../lib/actions";
+import { useEditState } from "../../store/edit";
 import styles from "./Stage.module.css";
 
 export function Loupe({ probe }: { probe: Probe }) {
@@ -14,6 +16,30 @@ export function Loupe({ probe }: { probe: Probe }) {
         {r} {g} {b}
         {a < 255 && ` · ${Math.round((a / 255) * 100)}%`}
       </span>
+    </div>
+  );
+}
+
+/** Draggable divider of the before / after split, positioned at `at` (0 … 1). */
+export function SplitDivider({ at }: { at: number }) {
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+    const stage = e.currentTarget.parentElement!.getBoundingClientRect();
+    useEditState.getState().set({ split: Math.min(1, Math.max(0, (e.clientX - stage.left) / stage.width)) });
+  };
+  return (
+    <div
+      className={styles.split}
+      style={{ left: `${at * 100}%` }}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }}
+      onPointerMove={onPointerMove}
+      onDoubleClick={(e) => e.stopPropagation()}
+    >
+      <span>原图</span>
+      <span>调整后</span>
     </div>
   );
 }

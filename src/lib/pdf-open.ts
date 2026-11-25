@@ -3,7 +3,7 @@ import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
-/** Runtime assets copied by `scripts/copy-pdfjs-assets.mjs`. */
+/** Runtime assets copied by `scripts/copy-runtime-assets.mjs`. */
 const ASSETS = "/pdfjs/";
 
 export interface OpenedPdf {

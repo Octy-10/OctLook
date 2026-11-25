@@ -1,0 +1,165 @@
+.menu {
+  position: absolute;
+  right: 6px;
+  top: calc(100% + 6px);
+  width: 264px;
+  max-height: calc(100vh - var(--titlebar) - 16px);
+  padding: 6px;
+  overflow-y: auto;
+  border-radius: var(--radius-l);
+  background: var(--float-bg);
+  box-shadow:
+    0 0 0 1px var(--float-edge),
+    var(--float-shadow);
+  color: var(--float-text);
+  animation: menu-in 200ms var(--ease) both;
+  transform-origin: top right;
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    scale: 0.97;
+    translate: 0 -6px;
+  }
+}
+
+.menu h5 {
+  margin: 0;
+  padding: 8px 10px 4px;
+  font: 600 11px var(--font);
+  letter-spacing: 0.04em;
+  color: var(--float-muted);
+}
+.menu h5:not(:first-child) {
+  margin-top: 6px;
+  border-top: 1px solid var(--float-line);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--radius-s);
+  color: var(--float-icon);
+  text-align: left;
+  transition:
+    background 120ms var(--ease),
+    color 120ms var(--ease);
+}
+.item:hover {
+  background: var(--float-hover);
+  color: var(--float-text);
+}
+.item span {
+  flex: 1;
+  font-weight: 450;
+  color: var(--float-text);
+}
+.item kbd {
+  font: 10.5px var(--mono);
+  color: var(--float-muted);
+}
+/* Checked items carry a dot instead of a shortcut-coloured icon. */
+.item[data-checked] svg {
+  color: var(--accent);
+}
+.item[data-checked] span::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: middle;
+}
+.item[data-danger]:hover,
+.item[data-danger]:hover span {
+  color: var(--danger);
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  padding: 0 4px 0 10px;
+  color: var(--float-text);
+}
+.segments {
+  display: flex;
+  padding: 2px;
+  border-radius: var(--radius-s);
+  background: var(--float-hover);
+  box-shadow: inset 0 0 0 1px var(--float-line);
+}
+.segments button {
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 3px;
+  font-size: 11.5px;
+  color: var(--float-icon);
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.segments button:hover {
+  color: var(--float-text);
+}
+.segments button[data-active] {
+  background: var(--selected-bg);
+  color: var(--selected-fg);
+  font-weight: 550;
+}
+
+.menu footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding: 5px 4px 0 10px;
+  border-top: 1px solid var(--float-line);
+  font: 10.5px var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--float-muted);
+}
+
+/* Right-click menu: opens at the pointer, clamped into the window. */
+.context {
+  position: fixed;
+  right: auto;
+  width: 232px;
+  max-height: calc(100vh - 16px);
+  transform-origin: top left;
+  z-index: 100;
+}
+.separator {
+  height: 1px;
+  margin: 5px 4px;
+  background: var(--float-line);
+}
+.item:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.menu footer button {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--radius-s);
+  font: 500 11.5px var(--font);
+  letter-spacing: 0;
+  color: var(--accent);
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.menu footer button:hover:not(:disabled) {
+  background: var(--accent-soft);
+}
+.menu footer button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

@@ -20,9 +20,27 @@
 
 界面左上角的「内嵌预览」标识表示显示的是设计软件保存的预览图，而非完整渲染。
 
+## 编辑与设计师工具
+
+所有编辑都是非破坏性的：原文件从不被改写，结果通过「导出」另存为新文件。切换到其他图片时，未导出的编辑会被丢弃。
+
+- **调色**（`E`）：曝光、对比度、饱和度、色温、色调、色相，以及黑白 / 反相。预览走 GPU 上的 SVG 颜色矩阵滤镜，导出使用同一矩阵逐像素计算，所见即所得。双击滑块复位单项。
+- **标注**（`A`）：文字、箭头、矩形，六种颜色；工具栏的滑块随当前工具或选中元素变化（文字调字号，箭头调大小，矩形调线宽）。文字直接在画面上输入（单击落点即可打字，双击已有文字重新编辑）；选中元素后拖动本体移动，拖动手柄缩放（矩形四角、箭头两端、文字右下角），`Del` 删除。文字在添加时自动摆正，即使图片已旋转或翻转。标注随导出一并写入新文件。
+- **裁剪**（`X`）：自由或锁定比例（原始、1:1、4:3、3:2、16:9、3:4、9:16），三分线辅助；`Enter` / 双击应用，`Esc` 取消。
+- **前后对比**：按住 `\` 临时查看调色前的画面；编辑面板中可开启可拖动的分屏对比。
+- **重置**（`Ctrl R`）：一键撤销调色、裁剪、标注、旋转和翻转。
+- **导出**（`Ctrl S`）：PNG / JPG / WebP，可设质量与长边像素；PDF、AI 等矢量文件按 300 dpi 栅格化。导出结果为 8 bit sRGB，不保留 EXIF 与 ICC 配置文件。
+- **复制图像**（`Ctrl C`）：把当前编辑结果放入剪贴板，直接粘贴到设计软件或聊天窗口。
+- **文字提取**（`O`）：PDF / AI 直接读取内嵌文本；其余图片用 PaddleOCR PP-OCRv5 轻量模型（Apache-2.0）在 ONNX Runtime 上离线识别，覆盖简繁中文、英文、日文与竖排、倾斜文字，已裁剪时只识别裁剪区域。模型随安装包分发（约 21 MB），首次使用时加载，不联网。模型由 `scripts/fetch-ocr-models.mjs` 在构建前下载并校验 SHA-256（国内可设 `HF_ENDPOINT=https://hf-mirror.com`）。
+- **文件信息**（`I`）：除格式、尺寸、EXIF 外，还显示 300 dpi 下的印刷尺寸和图片主色（单击色块复制 HEX）。
+
+底部工具条只保留高频工具（旋转、裁剪、标注、调色、取色、提取文字、导出）。缩放比例显示在标题栏文件名旁，单击在适应窗口与 100% 之间切换。其余命令和偏好集中在工具条右侧的设置菜单：复制图像、文件信息、翻转、适应窗口 / 实际大小、画布背景、界面外观（跟随系统 / 深色 / 浅色）、缩略图栏、全屏以及文件操作。
+
 ## 资源管理器缩略图
 
-安装包会注册一个 Windows 缩略图扩展（`octlook_shell.dll`，进程隔离运行），让桌面和文件夹直接显示 PSD、PSB、AI、CDR、Sketch、XD、Figma、Krita、OpenRaster、Affinity 等文件的缩略图。
+安装包会注册一个 Windows 缩略图扩展（`octlook_shell.dll`，进程隔离运行），让桌面和文件夹直接显示 PSD、PSB、AI、SVG、CDR、Sketch、XD、Figma、Krita、OpenRaster、Affinity 等文件的缩略图。
+
+- SVG 由 resvg 按图标尺寸直接矢量渲染（小图标也清晰）；含文字的 SVG 使用系统字体。出于安全考虑只加载内嵌的 `data:` 图片，不读取文档引用的外部文件。
 
 - 已有其他缩略图程序的格式不会被接管（如 Ardfry 的 PSD/AI、Adobe 的 INDD）；卸载对方后重装 OctLook 即可生效。
 - PSD 小图标用文件内嵌缩略图，大图标读取完整合成图；AI 使用 Illustrator 保存的内嵌预览。
@@ -41,6 +59,11 @@
 | 滚轮 / 捏合 | 以光标为中心缩放 | 拖动 | 平移 |
 | 0 / 1 / 双击 | 适应窗口 / 100% | + − | 缩放档位 |
 | R / Shift R | 旋转 | H / V | 水平 / 垂直翻转 |
+| X | 裁剪（Enter 应用） | E | 调色与导出面板 |
+| A | 标注（文字 / 箭头 / 矩形） | Del | 删除选中标注 / 移至回收站 |
+| 按住 \ | 对比调色前 | Ctrl R | 重置全部编辑 |
+| Ctrl S | 导出为新文件 | Ctrl C | 复制图像 |
+| O | 提取文字（OCR） | | |
 | C | 取色器（单击复制 HEX） | B | 切换背景（深 / 浅 / 透明网格） |
 | I | 文件信息与 EXIF | T | 缩略图栏 |
 | F / F11 | 全屏 | Del | 移至回收站 |
@@ -78,22 +101,23 @@ $env:OCTLOOK_SAMPLES="D:\samples"; $env:OCTLOOK_OUT="D:\out"; cargo test --relea
 
 ```
 src-tauri/crates/octlook-core   解码服务（看图程序与缩略图扩展共用）
-  decode/       psd · embedded（XMP/JPEG/PNG/EPS）· container（ZIP/CDR）· raster · wic · stream（IStream 入口）
+  decode/       psd · embedded（XMP/JPEG/PNG/EPS）· container（ZIP/CDR）· svg（resvg）· raster · wic · stream（IStream 入口）
   format.rs     扩展名表（唯一数据源）；meta.rs EXIF；thumbnail.rs 方向校正 + Lanczos 缩放
 src-tauri/crates/octlook-shell  资源管理器缩略图 COM 组件（IThumbnailProvider + IInitializeWithStream）
 src-tauri/src                   Tauri 应用
   commands.rs   IPC 控制器（仅参数转发）
-  wire.rs       二进制 IPC 帧：[payload][header JSON][u32 长度]，大图像素无需 base64
+  wire.rs       二进制 IPC 帧：[payload][header JSON][u32 长度]，大图像素无需 base64；导出写盘走同一布局
   thumbs.rs     缩略图栏：LRU 缓存 + CPU 核数限流，PNG 输出
   folder.rs     同目录文件自然排序
 src
-  lib/          纯逻辑：viewport 数学、IPC、源加载与预取缓存、pdf.js 按需加载
+  lib/          纯逻辑：viewport 数学、IPC、源加载与预取缓存、pdf.js / OCR 按需加载、
+                调色矩阵（edits）、裁剪数学（crop）、标注（annotate）、合成导出（render）、主色（palette）
   hooks/        交互逻辑（视口、取色、PDF 光栅、键盘、拖放）
-  store/        zustand 状态
+  store/        zustand 状态（view 视图 · edit 编辑 · text 文字提取 · library 文件列表）
   components/   纯 UI
 ```
 
-已复用的开源组件：`image`、`fast_image_resize`、`zip`、`kamadak-exif`、`trash`、pdf.js、Windows WIC、lucide 图标、Inter 字体。PSD 解析自研，原因是现有 crate（`psd`、`rawpsd`）不支持 PSB 或 16/32 bit。
+已复用的开源组件：`image`、`resvg`、`fast_image_resize`、`zip`、`kamadak-exif`、`trash`、pdf.js、PaddleOCR PP-OCRv5 模型、ONNX Runtime（`ort`）、Windows WIC、lucide 图标、Inter 字体。PSD 解析自研，原因是现有 crate（`psd`、`rawpsd`）不支持 PSB 或 16/32 bit。
 
 ## 许可证
 

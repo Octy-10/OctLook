@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState, type MouseEvent, type PointerEvent, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent, type PointerEvent, type RefObject } from "react";
 
-import { fitScale, zoomAt, type Orientation } from "../lib/viewport";
+import { fitScale, zoomAt, type Orientation, type View } from "../lib/viewport";
 import { useViewState } from "../store/view";
 
+/** The box on stage: a `width × height` window at (x, y) into the source content. */
 export interface StageContent {
+  x: number;
+  y: number;
   width: number;
   height: number;
   orientation: Orientation;
@@ -16,6 +19,29 @@ const DRAG_SLOP = 3;
 export function centreOffset(el: HTMLElement, clientX: number, clientY: number): [number, number] {
   const r = el.getBoundingClientRect();
   return [clientX - r.left - r.width / 2, clientY - r.top - r.height / 2];
+}
+
+type ViewUpdate = (v: View) => View;
+
+/**
+ * Coalesces gesture updates into one store write per frame: high-rate mice
+ * and trackpads emit several events between two paints.
+ */
+function useFrameBatched(apply: (update: ViewUpdate) => void) {
+  const queue = useRef<ViewUpdate[]>([]);
+  const frame = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+  return useCallback(
+    (update: ViewUpdate) => {
+      if (queue.current.push(update) > 1) return; // a flush is already scheduled
+      frame.current = requestAnimationFrame(() => {
+        const updates = queue.current;
+        queue.current = [];
+        apply((v) => updates.reduce((acc, u) => u(acc), v));
+      });
+    },
+    [apply],
+  );
 }
 
 /**
@@ -32,6 +58,7 @@ export function useViewport(
   const view = useViewState((s) => s.view);
   const setView = useViewState((s) => s.setView);
   const setFitScale = useViewState((s) => s.setFitScale);
+  const queueView = useFrameBatched(setView);
   const [dragging, setDragging] = useState(false);
   const drag = useRef<{ id: number; x: number; y: number; moved: boolean } | null>(null);
 
@@ -49,17 +76,18 @@ export function useViewport(
       e.preventDefault();
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
       if (!e.ctrlKey && Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        setView((v) => ({ ...v, x: v.x - e.deltaX * unit, fit: false })); // horizontal trackpad swipe
+        const dx = e.deltaX * unit;
+        queueView((v) => ({ ...v, x: v.x - dx, fit: false })); // horizontal trackpad swipe
         return;
       }
       // Pinch gestures arrive as ctrl+wheel with small deltas: amplify them.
-      const intensity = e.ctrlKey ? 0.01 : 0.0018;
+      const factor = Math.exp(-e.deltaY * unit * (e.ctrlKey ? 0.01 : 0.0018));
       const [px, py] = centreOffset(el, e.clientX, e.clientY);
-      setView((v) => zoomAt(v, v.scale * Math.exp(-e.deltaY * unit * intensity), px, py));
+      queueView((v) => zoomAt(v, v.scale * factor, px, py));
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [stageRef, setView]);
+  }, [stageRef, queueView]);
 
   const handlers = {
     onPointerDown(e: PointerEvent) {
@@ -77,7 +105,7 @@ export function useViewport(
       d.moved = true;
       d.x = e.clientX;
       d.y = e.clientY;
-      setView((v) => ({ ...v, x: v.x + dx, y: v.y + dy, fit: false }));
+      queueView((v) => ({ ...v, x: v.x + dx, y: v.y + dy, fit: false }));
     },
     onPointerUp(e: PointerEvent) {
       const d = drag.current;
