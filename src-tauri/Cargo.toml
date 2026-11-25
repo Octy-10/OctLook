@@ -1,0 +1,49 @@
+[package]
+name = "octlook"
+version = "0.1.0"
+description = "OctLook — a fast image viewer for designers"
+edition = "2021"
+license = "GPL-3.0-only"
+repository = "https://github.com/Octy-10/OctLook"
+rust-version = "1.80"
+
+[lib]
+name = "octlook_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+octlook-core = { path = "crates/octlook-core" }
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-process = "2"
+tauri-plugin-updater = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+image = { version = "0.25", default-features = false, features = ["png"] }
+lru = "0.19"
+natord = "1"
+trash = "5"
+parking_lot = "0.12"
+tokio = { version = "1", features = ["sync"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-registry = "0.6"
+windows = { version = "0.62", features = ["Win32_UI_Shell"] }
+
+[workspace]
+members = ["crates/octlook-core", "crates/octlook-shell"]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true
+panic = "unwind"
+
+[profile.dev.package."*"]
+opt-level = 3

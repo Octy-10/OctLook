@@ -1,0 +1,24 @@
+[package]
+name = "octlook-core"
+version = "0.1.0"
+description = "OctLook decoding services shared by the viewer and the Explorer thumbnail handler"
+edition = "2021"
+license = "GPL-3.0-only"
+repository = "https://github.com/Octy-10/OctLook"
+rust-version = "1.80"
+publish = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "bmp", "ico", "tiff", "tga", "webp", "pnm", "dds", "hdr", "exr", "qoi", "rayon"] }
+fast_image_resize = { version = "6", features = ["image"] }
+zip = { version = "9", default-features = false, features = ["deflate"] }
+flate2 = "1"
+kamadak-exif = "0.6"
+base64 = "0.22"
+memchr = "2"
+rayon = "1"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com", "Win32_Graphics_Imaging"] }

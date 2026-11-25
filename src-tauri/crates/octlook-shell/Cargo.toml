@@ -1,0 +1,31 @@
+[package]
+name = "octlook-shell"
+version = "0.1.0"
+description = "Explorer thumbnail handler (IThumbnailProvider) for design formats"
+edition = "2021"
+license = "GPL-3.0-only"
+repository = "https://github.com/Octy-10/OctLook"
+rust-version = "1.80"
+publish = false
+
+[lib]
+name = "octlook_shell"
+crate-type = ["cdylib", "rlib"]
+
+[target.'cfg(windows)'.dependencies]
+octlook-core = { path = "../octlook-core" }
+image = { version = "0.25", default-features = false }
+windows-core = "0.62"
+windows-registry = "0.6"
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_System_Com",
+    "Win32_System_LibraryLoader",
+    "Win32_System_SystemServices",
+    "Win32_UI_Shell",
+    "Win32_UI_Shell_PropertiesSystem",
+] }
+
+[target.'cfg(windows)'.dev-dependencies]
+image = { version = "0.25", default-features = false, features = ["png"] }

@@ -1,0 +1,19 @@
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.viewer {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
