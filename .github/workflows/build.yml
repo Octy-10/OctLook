@@ -74,8 +74,12 @@ jobs:
       - name: Test
         if: matrix.name != 'macos-x64' # cross-compiled: its tests cannot run on an arm64 runner
         shell: bash
+        # tauri-build checks every bundled resource exists: fetch the OCR models
+        # and, on Windows, build the thumbnail DLL before compiling the app.
         run: |
           npm run typecheck
+          node scripts/fetch-ocr-models.mjs
+          if [ "$RUNNER_OS" = "Windows" ]; then cargo build --release -p octlook-shell --manifest-path src-tauri/Cargo.toml; fi
           cargo test --workspace --release --manifest-path src-tauri/Cargo.toml
 
       # Update signatures need the private key; without it, build unsigned installers.
