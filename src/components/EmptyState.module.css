@@ -19,20 +19,13 @@
 
 .inner {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 580px) minmax(0, 400px);
-  align-items: center;
-  justify-content: center;
-  gap: 56px;
-  width: min(1040px, 100%);
+  width: min(640px, 100%);
+  animation: rise 600ms var(--ease) both;
 }
-/* Too narrow for both columns: the copy keeps its full measure, the motion graphic steps aside. */
-@media (max-width: 1080px) {
-  .inner {
-    grid-template-columns: minmax(0, 640px);
-  }
-  .art {
-    display: none;
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 12px;
   }
 }
 
@@ -50,16 +43,6 @@
   font-weight: 650;
   line-height: 1.08;
   letter-spacing: -0.035em;
-}
-/* Mask each line slides up from; the padding keeps descenders inside it. */
-.line {
-  display: block;
-  padding-bottom: 0.1em;
-  margin-bottom: -0.1em;
-  overflow: hidden;
-}
-.line > span {
-  display: block;
 }
 .headline em {
   font-style: normal;
