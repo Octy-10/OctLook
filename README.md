@@ -121,7 +121,7 @@ $env:TAURI_SIGNING_PRIVATE_KEY = Get-Content "$env:USERPROFILE\.tauri\octlook-up
 
 仓库需配置 Secret `TAURI_SIGNING_PRIVATE_KEY`（私钥文件全文）。私钥丢失将无法再向现有用户推送更新。
 
-Rust 单元测试：`cargo test --workspace`（在 `src-tauri` 下）。用本地样本跑完整解码管线：
+Rust 单元测试：`cargo test --workspace`（在 `src-tauri` 下；macOS 需加 `--exclude octlook-shell`）。用本地样本跑完整解码管线：
 
 ```powershell
 $env:OCTLOOK_SAMPLES="D:\samples"; $env:OCTLOOK_OUT="D:\out"; cargo test --release decode_local_samples -- --ignored --nocapture

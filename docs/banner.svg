@@ -1,97 +1,130 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 560" font-family="Inter, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
-  <!-- OctLook README banner: brand on the left, a stylised viewer window on the right. -->
+<svg overflow="hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="-apple-system, 'SF Pro Display', 'Segoe UI Variable Display', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <!-- OctLook README hero: centred headline over a product shot rising from the bottom edge. -->
   <defs>
-    <linearGradient id="night" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1B1D26"/>
-      <stop offset="1" stop-color="#0A0B0E"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.78" cy="0.42" r="0.55">
-      <stop offset="0" stop-color="#6E8BFF" stop-opacity="0.28"/>
-      <stop offset="1" stop-color="#6E8BFF" stop-opacity="0"/>
+    <radialGradient id="stage" cx="0.5" cy="0.78" r="0.7">
+      <stop offset="0" stop-color="#1A1530"/>
+      <stop offset="0.55" stop-color="#07070A"/>
+      <stop offset="1" stop-color="#000"/>
     </radialGradient>
+    <linearGradient id="headline" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.55" stop-color="#E4E1FF"/>
+      <stop offset="1" stop-color="#B9A8FF"/>
+    </linearGradient>
     <linearGradient id="moon" x1="0.2" y1="0" x2="0.7" y2="1">
       <stop offset="0" stop-color="#FFFFFF"/>
       <stop offset="1" stop-color="#D9D5CA"/>
     </linearGradient>
-    <mask id="crescent">
-      <circle cx="104" cy="110" r="46" fill="#FFF"/>
-      <circle cx="122" cy="93" r="38" fill="#000"/>
-    </mask>
-    <linearGradient id="art" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#FF8A65"/>
-      <stop offset="0.5" stop-color="#C86DD7"/>
-      <stop offset="1" stop-color="#5B7CFA"/>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#26272F"/>
+      <stop offset="1" stop-color="#0E0F12"/>
     </linearGradient>
-    <pattern id="grid" width="16" height="16" patternUnits="userSpaceOnUse">
-      <rect width="16" height="16" fill="#15171D"/>
-      <rect width="8" height="8" fill="#1B1E25"/>
-      <rect x="8" y="8" width="8" height="8" fill="#1B1E25"/>
-    </pattern>
-    <clipPath id="canvas"><rect x="736" y="148" width="420" height="262" rx="4"/></clipPath>
+    <mask id="crescent">
+      <circle cx="640" cy="92" r="16" fill="#FFF"/>
+      <circle cx="647" cy="85" r="13.5" fill="#000"/>
+    </mask>
+    <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2A2A30"/>
+      <stop offset="1" stop-color="#1E1E23"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFF" stop-opacity="0.28"/>
+      <stop offset="0.3" stop-color="#FFF" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#FFF" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000"/>
+    </linearGradient>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="46"/></filter>
+    <filter id="halo" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="60"/></filter>
+    <filter id="drop" x="-20%" y="-20%" width="140%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="18"/>
+      <feOffset dy="16"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.45"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="window"><rect x="230" y="318" width="820" height="520" rx="14"/></clipPath>
+    <clipPath id="canvas"><rect x="230" y="362" width="820" height="476"/></clipPath>
   </defs>
 
-  <rect width="1280" height="560" fill="url(#night)"/>
-  <rect width="1280" height="560" fill="url(#glow)"/>
+  <rect width="1280" height="720" fill="url(#stage)"/>
+  <!-- Ambient light behind the product -->
+  <ellipse cx="640" cy="560" rx="420" ry="170" fill="#6D4CFF" opacity="0.35" filter="url(#halo)"/>
+  <ellipse cx="820" cy="600" rx="220" ry="120" fill="#FF5F8F" opacity="0.22" filter="url(#halo)"/>
 
-  <!-- Brand -->
-  <g transform="translate(40 52)">
-    <rect x="58" y="64" width="92" height="92" fill="url(#moon)" mask="url(#crescent)"/>
+  <!-- App icon + name -->
+  <rect x="616" y="68" width="48" height="48" rx="11" fill="url(#tile)"/>
+  <rect x="616.5" y="68.5" width="47" height="47" rx="10.5" fill="none" stroke="#FFF" stroke-opacity="0.12"/>
+  <rect x="620" y="72" width="40" height="40" fill="url(#moon)" mask="url(#crescent)"/>
+  <text x="640" y="150" fill="#A1A1A6" font-size="19" font-weight="600" text-anchor="middle" letter-spacing="0.5">OctLook</text>
+
+  <!-- Headline -->
+  <text x="640" y="222" fill="url(#headline)" font-size="64" font-weight="700" text-anchor="middle" letter-spacing="-1.5">设计稿，一眼看透。</text>
+  <text x="640" y="270" fill="#86868B" font-size="21" font-weight="500" text-anchor="middle">PSD、AI、CDR、Sketch、RAW 秒开 · 离线识别文字 · Windows 与 macOS</text>
+
+  <!-- Product shot -->
+  <g filter="url(#drop)">
+    <rect x="230" y="318" width="820" height="520" rx="14" fill="#0B0B0E"/>
   </g>
-  <text x="80" y="268" fill="#F4F5F8" font-size="76" font-weight="700" letter-spacing="-2">OctLook</text>
-  <text x="84" y="322" fill="#B8BDCB" font-size="26" font-weight="500">专为设计师打造的极简看图软件</text>
-  <text x="84" y="362" fill="#7C8294" font-size="18">PSD · AI · CDR · Sketch · RAW · HEIC · PDF  秒开</text>
-
-  <g font-size="15" font-weight="600">
-    <rect x="84" y="404" width="112" height="36" rx="6" fill="#6E8BFF"/>
-    <text x="140" y="427" fill="#FFF" text-anchor="middle">Windows</text>
-    <rect x="208" y="404" width="96" height="36" rx="6" fill="none" stroke="#3A3F4D"/>
-    <text x="256" y="427" fill="#D5D9E3" text-anchor="middle">macOS</text>
-    <rect x="316" y="404" width="132" height="36" rx="6" fill="none" stroke="#3A3F4D"/>
-    <text x="382" y="427" fill="#D5D9E3" text-anchor="middle">离线 · 开源</text>
-  </g>
-
-  <!-- Viewer window -->
-  <g>
-    <rect x="712" y="88" width="468" height="392" rx="8" fill="#121419" stroke="#2A2E38"/>
-    <rect x="712" y="88" width="468" height="44" rx="8" fill="#171A21"/>
-    <rect x="712" y="124" width="468" height="8" fill="#171A21"/>
-    <line x1="712" y1="132" x2="1180" y2="132" stroke="#2A2E38"/>
-    <circle cx="734" cy="110" r="5" fill="#3A3F4D"/>
-    <circle cx="752" cy="110" r="5" fill="#3A3F4D"/>
-    <circle cx="770" cy="110" r="5" fill="#3A3F4D"/>
-    <rect x="790" y="99" width="48" height="22" rx="4" fill="none" stroke="#3A3F4D"/>
-    <text x="814" y="114" fill="#AEB4C2" font-size="11" text-anchor="middle">100%</text>
-    <text x="850" y="115" fill="#D5D9E3" font-size="13">poster.psd</text>
-    <text x="1158" y="115" fill="#7C8294" font-size="12" text-anchor="end">3 / 24</text>
-
-    <!-- Canvas with a layered artwork -->
-    <rect x="736" y="148" width="420" height="262" rx="4" fill="url(#grid)"/>
+  <g clip-path="url(#window)">
+    <!-- Canvas: an abstract poster made of light -->
+    <rect x="230" y="362" width="820" height="476" fill="#0B0B10"/>
     <g clip-path="url(#canvas)">
-      <rect x="800" y="168" width="292" height="222" rx="4" fill="url(#art)"/>
-      <circle cx="1030" cy="230" r="38" fill="#FFF" fill-opacity="0.85"/>
-      <path d="M800 350 L880 280 L940 330 L1000 270 L1092 360 V390 H800 Z" fill="#1B1D26" fill-opacity="0.55"/>
+      <circle cx="470" cy="470" r="150" fill="#7C5CFF" filter="url(#soft)"/>
+      <circle cx="700" cy="420" r="130" fill="#FF5F8F" filter="url(#soft)"/>
+      <circle cx="860" cy="560" r="160" fill="#FFB86B" opacity="0.9" filter="url(#soft)"/>
+      <circle cx="590" cy="640" r="150" fill="#22D3EE" opacity="0.75" filter="url(#soft)"/>
+      <!-- Poster typography -->
+      <text x="318" y="452" fill="#FFF" font-size="13" font-weight="600" letter-spacing="4" opacity="0.85">AURORA · 2026</text>
+      <text x="314" y="530" fill="#FFF" font-size="76" font-weight="800" letter-spacing="-3">Light</text>
+      <text x="314" y="604" fill="#FFF" font-size="76" font-weight="800" letter-spacing="-3" opacity="0.9">Studies</text>
+      <!-- Annotation over the artwork -->
+      <rect x="748" y="404" width="168" height="112" rx="2" fill="none" stroke="#FFD60A" stroke-width="3"/>
+      <path d="M612 470 C660 470 700 462 738 448" fill="none" stroke="#FFD60A" stroke-width="3" stroke-linecap="round"/>
+      <path d="M744 446 l-14 -4 l6 13 z" fill="#FFD60A" stroke="#FFD60A" stroke-width="2" stroke-linejoin="round"/>
+      <!-- Eyedropper loupe -->
+      <g transform="translate(0 -96)">
+      <circle cx="902" cy="640" r="30" fill="#F7A86A" stroke="#FFF" stroke-width="3"/>
+      <rect x="846" y="682" width="112" height="28" rx="14" fill="#1C1C1E" fill-opacity="0.86"/>
+      <circle cx="864" cy="696" r="6" fill="#F7A86A"/>
+      <text x="878" y="701" fill="#F5F5F7" font-size="13" font-family="'SF Mono', ui-monospace, Consolas, monospace">#F7A86A</text>
+      </g>
     </g>
-    <!-- Annotation: rect + arrow + label -->
-    <rect x="990" y="190" width="80" height="80" fill="none" stroke="#FFD166" stroke-width="3"/>
-    <path d="M900 214 L978 226" stroke="#FFD166" stroke-width="3"/>
-    <path d="M986 227 L972 219 L970 235 Z" fill="#FFD166"/>
-    <text x="824" y="216" fill="#FFF" font-size="15" font-weight="650">主视觉</text>
-    <!-- Eyedropper chip -->
-    <rect x="1050" y="372" width="92" height="26" rx="4" fill="#0E0F13" fill-opacity="0.92" stroke="#2A2E38"/>
-    <rect x="1058" y="379" width="12" height="12" rx="2" fill="#C86DD7"/>
-    <text x="1076" y="390" fill="#D5D9E3" font-size="12" font-family="ui-monospace, Consolas, monospace">#C86DD7</text>
 
-    <!-- HUD toolbar -->
-    <rect x="826" y="424" width="240" height="40" rx="8" fill="#1C1F27" stroke="#2A2E38"/>
-    <g fill="none" stroke="#AEB4C2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M852 438 a7 7 0 1 1 -2 5 M850 434 v5 h5"/>
-      <path d="M882 436 v14 h14 M878 440 h14 v14"/>
-      <path d="M916 452 l8 -12 l6 6 l-8 12 z"/>
-      <circle cx="950" cy="444" r="7"/><path d="M950 437 v14"/>
-      <path d="M972 438 h12 M972 444 h12 M972 450 h8"/>
-      <path d="M1002 437 h10 l4 4 v11 h-14 z M1005 437 v5 h7"/>
+    <!-- Title bar -->
+    <rect x="230" y="318" width="820" height="44" fill="url(#chrome)"/>
+    <line x1="230" y1="361.5" x2="1050" y2="361.5" stroke="#000" stroke-opacity="0.6"/>
+    <circle cx="254" cy="340" r="6" fill="#FF5F57"/>
+    <circle cx="274" cy="340" r="6" fill="#FEBC2E"/>
+    <circle cx="294" cy="340" r="6" fill="#28C840"/>
+    <rect x="316" y="329" width="50" height="22" rx="5" fill="none" stroke="#FFF" stroke-opacity="0.16"/>
+    <text x="341" y="344.5" fill="#C7C7CC" font-size="11.5" font-weight="500" text-anchor="middle">100%</text>
+    <text x="640" y="345" fill="#E5E5EA" font-size="13" font-weight="600" text-anchor="middle">light-studies.psd</text>
+    <text x="1026" y="345" fill="#8E8E93" font-size="12" text-anchor="end">3 / 24</text>
+
+    <!-- Floating glass toolbar -->
+    <g transform="translate(0 -110)">
+    <g filter="url(#drop)">
+      <rect x="500" y="736" width="280" height="48" rx="12" fill="#2C2C2E" fill-opacity="0.92"/>
     </g>
-    <rect x="1028" y="430" width="30" height="28" rx="4" fill="#6E8BFF" fill-opacity="0.2"/>
-    <path d="M1036 446 l4 4 l8 -9" fill="none" stroke="#AEBDFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="500.5" y="736.5" width="279" height="47" rx="11.5" fill="none" stroke="#FFF" stroke-opacity="0.12"/>
+    <g fill="none" stroke="#E5E5EA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M528 760 a8 8 0 1 0 2.5 -6 M528 750 v5 h5"/>
+      <path d="M562 752 v16 h16 M558 756 h16 v16"/>
+      <path d="M598 770 l10 -14 l6 5 l-10 14 z"/>
+      <circle cx="640" cy="760" r="8"/><path d="M640 752 v16"/>
+      <path d="M664 754 h14 M664 760 h14 M664 766 h9"/>
+      <path d="M702 752 h11 l4 4 v14 h-15 z M705 752 v5 h8"/>
+    </g>
+    <rect x="732" y="744" width="38" height="32" rx="8" fill="#0A84FF"/>
+    <path d="M743 760 l5 5 l10 -11" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <!-- Glass rim -->
+    <rect x="230.5" y="318.5" width="819" height="519" rx="13.5" fill="none" stroke="url(#rim)"/>
   </g>
+
+  <!-- Product dissolves into the page -->
+  <rect x="0" y="630" width="1280" height="90" fill="url(#fade)"/>
 </svg>
