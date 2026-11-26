@@ -30,7 +30,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(updater())
         .manage(Arc::new(thumbs::Thumbnailer::new()))
         .manage(commands::LaunchPath::from_args())
         .setup(|app| {
@@ -102,4 +102,14 @@ pub fn run() {
                 }
             }
         });
+}
+
+/// Windows: an update installs over the running copy (`/D=` its directory),
+/// wherever the user put it, instead of where the installer's registry says.
+fn updater() -> tauri::plugin::TauriPlugin<tauri::Wry, tauri_plugin_updater::Config> {
+    let builder = tauri_plugin_updater::Builder::new();
+    // NSIS takes `/D=` unquoted and last, which is where the plugin appends it.
+    #[cfg(windows)]
+    let builder = builder.installer_args(std::env::current_exe().ok().and_then(|exe| Some(format!("/D={}", exe.parent()?.display()))));
+    builder.build()
 }

@@ -41,11 +41,32 @@
   Pop $0
 !macroend
 
+; Up to 0.2.0 the publisher was the default "octlook", and the installer keeps
+; the install directory under Software\<publisher>\OctLook. Since 0.2.1 it is
+; 十月, so an update from an older copy found no directory and went to the
+; default one, beside the old copy. An update (no directory page, so no user
+; choice to override) goes where the old key says, and the key is then retired.
+!define OCTLOOK_LEGACY_KEY "Software\octlook\OctLook"
+
 !macro NSIS_HOOK_PREINSTALL
+  ${If} $UpdateMode = 1
+    Push $0
+    Push $1
+    ReadRegStr $0 SHCTX "${MANUPRODUCTKEY}" ""
+    ReadRegStr $1 SHCTX "${OCTLOOK_LEGACY_KEY}" ""
+    ${If} $0 == ""
+    ${AndIf} $1 != ""
+      StrCpy $INSTDIR $1
+      SetOutPath $INSTDIR
+    ${EndIf}
+    Pop $1
+    Pop $0
+  ${EndIf}
   !insertmacro OCTLOOK_MOVE_ASIDE
 !macroend
 
 !macro NSIS_HOOK_POSTINSTALL
+  DeleteRegKey SHCTX "${OCTLOOK_LEGACY_KEY}"
   ExecWait '"$INSTDIR\${MAINBINARYNAME}.exe" --register-shell'
   !insertmacro OCTLOOK_REGSVR32 ""
   !insertmacro OCTLOOK_PURGE_THUMBNAILS
