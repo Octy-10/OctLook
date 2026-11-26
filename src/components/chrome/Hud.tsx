@@ -7,14 +7,13 @@ import {
   Crop,
   PenLine,
   Pipette,
-  RotateCw,
   Save,
   ScanText,
   SlidersHorizontal,
   Undo2,
 } from "lucide-react";
 
-import { editActions, viewActions } from "../../lib/actions";
+import { editActions } from "../../lib/actions";
 import { isNeutral } from "../../lib/edits";
 import { keys } from "../../lib/platform";
 import type { ImageSource } from "../../lib/source";
@@ -74,9 +73,6 @@ export function Hud({ source, hidden }: { source: ImageSource | null; hidden: bo
         <ChevronLeft {...ICON} />
       </Tool>
       <Divider />
-      <Tool label="旋转" tip="旋转  R" onClick={() => viewActions.rotate(1)}>
-        <RotateCw {...ICON} />
-      </Tool>
       <Tool label="裁剪" tip="裁剪  X" onClick={editActions.toggleCrop} active={cropping}>
         <Crop {...ICON} />
       </Tool>

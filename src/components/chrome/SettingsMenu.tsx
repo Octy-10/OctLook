@@ -4,14 +4,11 @@ import {
   ClipboardCopy,
   Copy,
   Expand,
-  FlipHorizontal2,
-  FlipVertical2,
   FolderOpen,
   FolderSearch,
   ImagePlus,
   Info,
   Maximize,
-  RotateCcw,
   Scan,
   Trash2,
 } from "lucide-react";
@@ -64,11 +61,6 @@ export function SettingsMenu({ onClose }: { onClose(): void }) {
       <h5>工具</h5>
       <Item icon={<ClipboardCopy {...ICON} />} label="复制图像" shortcut="Ctrl C" onSelect={editActions.copyImage} />
       <Item icon={<Info {...ICON} />} label="文件信息" shortcut="I" checked={panel === "info"} onSelect={() => togglePanel("info")} />
-
-      <h5>变换</h5>
-      <Item icon={<RotateCcw {...ICON} />} label="向左旋转" shortcut="Shift R" keepOpen onSelect={() => viewActions.rotate(-1)} />
-      <Item icon={<FlipHorizontal2 {...ICON} />} label="水平翻转" shortcut="H" keepOpen onSelect={viewActions.flipX} />
-      <Item icon={<FlipVertical2 {...ICON} />} label="垂直翻转" shortcut="V" keepOpen onSelect={viewActions.flipY} />
 
       <h5>显示</h5>
       <Item icon={<Scan {...ICON} />} label="适应窗口" shortcut="0" onSelect={viewActions.fit} />

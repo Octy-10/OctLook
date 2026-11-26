@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import type { PDFDocumentProxy, PDFPageProxy } from "pdfjs-dist";
 
 import { pageSize, renderPage } from "../lib/pdf";
+import { SETTLE_MS } from "../lib/viewport";
 
 export interface PdfPage {
   page: PDFPageProxy;
@@ -28,7 +29,6 @@ export function usePdfPage(doc: PDFDocumentProxy | null, pageNumber: number): Pd
 
 /** Re-render threshold: resolution tiers at powers of two of device pixels. */
 const tier = (scale: number) => Math.max(0.25, 2 ** Math.ceil(Math.log2(scale * devicePixelRatio)));
-const SETTLE_MS = 120;
 
 /**
  * Keeps `canvasRef` filled with a raster of `page` sharp enough for the

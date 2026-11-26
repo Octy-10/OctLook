@@ -1,26 +1,57 @@
+/* The start page is the promo film's stage: its black, edge to edge, dark in either theme. */
 .empty {
   position: relative;
   flex: 1;
-  display: grid;
-  place-items: center;
-  padding: 32px;
-  overflow: auto;
+  min-height: 0;
+  overflow: hidden;
+  background: #000;
 }
-/* Figma-like dotted canvas fading out towards the edges */
-.empty::before {
-  content: "";
+:global(:root[data-theme="light"]) .empty {
+  color-scheme: dark;
+  --text: #ededef;
+  --text-2: #a1a1aa;
+  --bg: #0b0b0d;
+  --line-strong: rgba(255, 255, 255, 0.13);
+  --accent: #6e8bff;
+}
+
+/* Fills the page, a touch dimmed so the buttons stay in front. Decorative: no menu, no drag. */
+.film {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(var(--line-strong) 1px, transparent 1.2px);
-  background-size: 22px 22px;
-  mask-image: radial-gradient(ellipse 85% 75% at 50% 45%, #000 30%, transparent 100%);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.75);
   pointer-events: none;
 }
 
-.inner {
-  position: relative;
-  width: min(640px, 100%);
-  animation: rise 600ms var(--ease) both;
+/* Below everything the film centres (its headlines, the icon), on frosted glass: whatever passes behind the
+   buttons, the window's lower edge or the floor glow, blurs into a soft backdrop. */
+.dock {
+  position: absolute;
+  inset: auto 0 max(40px, 12%);
+  width: fit-content;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 12px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 24px 60px -24px rgba(0, 0, 0, 0.7);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  backdrop-filter: blur(24px) saturate(1.2);
+  animation: rise 600ms var(--ease) 200ms both;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
 }
 @keyframes rise {
   from {
@@ -29,42 +60,6 @@
   }
 }
 
-.eyebrow {
-  margin: 0 0 20px;
-  font: 500 11px var(--mono);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
-.headline {
-  margin: 0;
-  font-size: clamp(34px, 5.4vw, 56px);
-  font-weight: 650;
-  line-height: 1.08;
-  letter-spacing: -0.035em;
-}
-.headline em {
-  font-style: normal;
-  background: var(--accent-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.lede {
-  max-width: 460px;
-  margin: 18px 0 28px;
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--text-2);
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
 .primary,
 .secondary {
   display: inline-flex;
@@ -87,48 +82,15 @@
   transform: translateY(-1px);
   box-shadow: 0 10px 30px -10px var(--accent);
 }
-.primary kbd {
-  margin-left: 4px;
-  font: 11px var(--mono);
-  opacity: 0.55;
-}
 .secondary {
+  background: rgba(255, 255, 255, 0.06);
   box-shadow: inset 0 0 0 1px var(--line-strong);
   color: var(--text);
 }
 .secondary:hover {
-  background: var(--hover);
+  background: rgba(255, 255, 255, 0.12);
 }
-
-.formats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 40px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.formats li {
-  padding: 3px 8px;
-  border-radius: var(--radius-s);
-  font: 500 10.5px var(--mono);
-  letter-spacing: 0.04em;
-  color: var(--text-3);
-  box-shadow: inset 0 0 0 1px var(--line);
-}
-
-.shortcuts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  margin: 28px 0 0;
-  padding: 0;
-  list-style: none;
-  color: var(--text-3);
+.hint {
   font-size: 12px;
-}
-.shortcuts kbd {
-  margin-right: 6px;
-  font: 500 11px var(--mono);
   color: var(--text-2);
 }

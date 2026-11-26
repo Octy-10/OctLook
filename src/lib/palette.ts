@@ -43,6 +43,7 @@ function medianCut(pixels: Pixel[], count: number): string[] {
 
 async function drawable(source: ImageSource): Promise<CanvasImageSource | null> {
   if (source.kind === "bitmap") return source.bitmap;
+  if (source.kind === "vector") return source.image;
   if (source.kind !== "image") return null;
   const img = new Image();
   img.crossOrigin = "anonymous";

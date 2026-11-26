@@ -1,14 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent, type PointerEvent, type RefObject } from "react";
 
-import { fitScale, zoomAt, type Orientation, type View } from "../lib/viewport";
+import { fitScale, zoomAt, type Orientation, type Rect, type View } from "../lib/viewport";
 import { useViewState } from "../store/view";
 
 /** The box on stage: a `width × height` window at (x, y) into the source content. */
-export interface StageContent {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+export interface StageContent extends Rect {
   orientation: Orientation;
 }
 

@@ -92,3 +92,26 @@ export function stageToContent(view: View, o: Orientation, w: number, h: number,
   if (o.mirror) dx = -dx;
   return [dx + w / 2, dy + h / 2];
 }
+
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** A zoom or pan is over once the view has been still this long; sharp re-renders wait for it. */
+export const SETTLE_MS = 120;
+
+/** What a `stageW × stageH` stage shows of `content` (a window into the source), in source pixels. */
+export function visibleRect(view: View, content: Rect & { orientation: Orientation }, stageW: number, stageH: number): Rect | null {
+  const { x, y, width: w, height: h, orientation: o } = content;
+  // Flips and quarter turns map the stage onto an axis-aligned box: two opposite corners span it.
+  const [ax, ay] = stageToContent(view, o, w, h, -stageW / 2, -stageH / 2);
+  const [bx, by] = stageToContent(view, o, w, h, stageW / 2, stageH / 2);
+  const left = Math.max(0, Math.min(ax, bx));
+  const top = Math.max(0, Math.min(ay, by));
+  const right = Math.min(w, Math.max(ax, bx));
+  const bottom = Math.min(h, Math.max(ay, by));
+  return right > left && bottom > top ? { x: x + left, y: y + top, width: right - left, height: bottom - top } : null;
+}

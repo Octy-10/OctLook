@@ -11,6 +11,7 @@ interface Common {
 /** A file ready to be put on stage. */
 export type ImageSource =
   | (Common & { kind: "image"; url: string; width: number; height: number })
+  | (Common & { kind: "vector"; image: HTMLImageElement; width: number; height: number })
   | (Common & { kind: "bitmap"; bitmap: ImageBitmap; width: number; height: number })
   | (Common & { kind: "pdf"; doc: PDFDocumentProxy; pages: number });
 
@@ -30,7 +31,10 @@ async function decodedImage(url: string, meta: DecodeMeta, dispose: () => void):
   // Vector images without intrinsic size report 0 × 0.
   const width = img.naturalWidth || 1024;
   const height = img.naturalHeight || 1024;
-  return { kind: "image", url, width, height, meta, dispose };
+  // SVG is drawn by the stage itself: as an <img> the WebView re-rasterises the whole vector at every zoom step.
+  return meta.format === "SVG"
+    ? { kind: "vector", image: img, width, height, meta, dispose }
+    : { kind: "image", url, width, height, meta, dispose };
 }
 
 async function load(path: string): Promise<ImageSource> {

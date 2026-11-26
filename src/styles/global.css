@@ -20,6 +20,8 @@
   --selected-fg: #aebdff;
   --accent-grad: linear-gradient(120deg, #ffffff 0%, #a9adbd 100%);
   --danger: #e5484d;
+  /* Error messages: a red that reads as body text on this theme's surfaces. */
+  --danger-text: #ff9592;
   --shadow: 0 0 0 1px var(--line-strong), 0 2px 8px -2px rgba(0, 0, 0, 0.4);
   --checker-a: #1a1a1e;
   --checker-b: #232328;
@@ -60,9 +62,11 @@
   --text-3: #a1a1aa;
   --accent: #3e63dd;
   --accent-soft: rgba(62, 99, 221, 0.12);
-  --selected-bg: rgba(62, 99, 221, 0.12);
-  --selected-fg: #3e63dd;
+  /* Selected toggles and segments, Figma-style: solid black, white glyph. */
+  --selected-bg: #18181b;
+  --selected-fg: #ffffff;
   --accent-grad: linear-gradient(120deg, #18181b 0%, #7b7f90 100%);
+  --danger-text: #ce2c31;
   --shadow: 0 0 0 1px var(--line-strong), 0 2px 8px -2px rgba(0, 0, 0, 0.1);
   --checker-a: #ffffff;
   --checker-b: #ececef;
@@ -179,9 +183,14 @@ input[type="range"]:hover::-webkit-slider-thumb {
   bottom: auto;
   top: calc(100% + 10px);
 }
-/* Anchored to the element's left edge, for controls at the window's left border. */
+/* Anchored to one edge of the element, for controls next to a clipping border. */
 [data-tip-align="start"]:hover::after {
   left: 0;
+  transform: none;
+}
+[data-tip-align="end"]:hover::after {
+  left: auto;
+  right: 0;
   transform: none;
 }
 

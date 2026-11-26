@@ -6,18 +6,18 @@ import { useElementSize } from "../../hooks/useElementSize";
 import type { SourceState } from "../../hooks/useSource";
 import { useViewport, type StageContent } from "../../hooks/useViewport";
 import { colorMatrix, isNeutral } from "../../lib/edits";
-import { cssTransform, exifOrientation } from "../../lib/viewport";
+import { cssTransform, exifOrientation, visibleRect } from "../../lib/viewport";
 import { useEditState } from "../../store/edit";
 import { useLibrary } from "../../store/library";
 import { useTextState } from "../../store/text";
 import { useViewState } from "../../store/view";
 import { AnnotateBar, AnnotationLayer } from "./annotate";
 import { CropBar, CropOverlay } from "./crop";
-import { BitmapLayer, ImageLayer, PdfLayer } from "./layers";
+import { BitmapLayer, ImageLayer, PdfLayer, VectorLayer } from "./layers";
 import { Loupe, SplitDivider, StageError } from "./overlays";
 import styles from "./Stage.module.css";
 
-/** Above this device-pixel magnification pixels are drawn as crisp squares. */
+/** Above this device-pixel magnification raster pixels are drawn as crisp squares. */
 const PIXELATED_FROM = 3;
 const ADJUST_FILTER = "octlook-adjust";
 
@@ -60,11 +60,12 @@ export function Stage({ source, loading, error }: SourceState) {
 
   const layers = (() => {
     if (!source || !full || !content || error) return null;
+    const raster = source.kind === "image" || source.kind === "bitmap"; // vectors have no pixels to show
     const box: CSSProperties = {
       width: content.width,
       height: content.height,
       transform: cssTransform(view, content.orientation),
-      imageRendering: view.scale * devicePixelRatio >= PIXELATED_FROM ? "pixelated" : "auto",
+      imageRendering: raster && view.scale * devicePixelRatio >= PIXELATED_FROM ? "pixelated" : "auto",
       overflow: draft ? "visible" : "hidden", // crop handles overhang the box
     };
     const inner: CSSProperties = { position: "absolute", left: -content.x, top: -content.y, width: full.width, height: full.height };
@@ -73,6 +74,8 @@ export function Stage({ source, loading, error }: SourceState) {
       switch (source.kind) {
         case "image":
           return <ImageLayer source={source} {...props} />;
+        case "vector":
+          return <VectorLayer source={source} visible={visibleRect(view, content, ...size)} scale={view.scale} fit={view.fit} {...props} />;
         case "bitmap":
           return <BitmapLayer source={source} {...props} />;
         case "pdf":

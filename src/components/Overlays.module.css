@@ -48,7 +48,7 @@
   animation: drop-in 220ms var(--ease) both;
 }
 .toast[data-tone="error"] {
-  color: #ff9592;
+  color: var(--danger-text);
 }
 
 @keyframes fade {

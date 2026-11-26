@@ -1,9 +1,10 @@
 import { useRef, useState, type CSSProperties, type PointerEvent, type RefObject } from "react";
-import { Check, X } from "lucide-react";
+import { Check, FlipHorizontal2, FlipVertical2, RotateCcw, RotateCw, X } from "lucide-react";
 
 import { centreOffset, type StageContent } from "../../hooks/useViewport";
-import { editActions } from "../../lib/actions";
+import { editActions, viewActions } from "../../lib/actions";
 import { constrainCrop, moveCrop, resizeCrop, sizeCrop, type Crop } from "../../lib/crop";
+import { keys } from "../../lib/platform";
 import { stageToContent, type View } from "../../lib/viewport";
 import { useEditState } from "../../store/edit";
 import { useViewState } from "../../store/view";
@@ -124,7 +125,17 @@ function SizeField({ label, value, onCommit }: { label: string; value: number; o
 
 const RATIOS: [label: string, ratio: number][] = [["1:1", 1], ["4:3", 4 / 3], ["3:2", 3 / 2], ["16:9", 16 / 9], ["3:4", 3 / 4], ["9:16", 9 / 16]];
 
-/** Crop tool controls: aspect presets, live size, cancel / apply. */
+/** Ratios survive rotation as reciprocals, so compare with a tolerance. */
+const sameRatio = (a: number | null, b: number | null) => a === b || (a !== null && b !== null && Math.abs(a - b) < 1e-9);
+
+const TRANSFORMS = [
+  ["向左旋转  Shift R", RotateCcw, () => viewActions.rotate(-1)],
+  ["向右旋转  R", RotateCw, () => viewActions.rotate(1)],
+  ["水平翻转  H", FlipHorizontal2, viewActions.flipX],
+  ["垂直翻转  V", FlipVertical2, viewActions.flipY],
+] as const;
+
+/** Crop tool controls: rotate / flip, aspect presets, live size, cancel / apply. */
 export function CropBar({ content, draft }: Omit<OverlayProps, "stageRef">) {
   const view = useViewState((s) => s.view);
   const aspect = useEditState((s) => s.aspect);
@@ -149,8 +160,14 @@ export function CropBar({ content, draft }: Omit<OverlayProps, "stageRef">) {
 
   return (
     <div className={bar.bar} onPointerDown={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()}>
+      {TRANSFORMS.map(([tip, Icon, run]) => (
+        <button key={tip} className={bar.action} aria-label={tip.split(" ")[0]} data-tip={keys(tip)} data-tip-side="bottom" onClick={run}>
+          <Icon size={15} />
+        </button>
+      ))}
+      <span className={bar.divider} />
       {([["自由", null], ["原始", original], ...RATIOS] as [string, number | null][]).map(([label, ratio]) => (
-        <button key={label} className={bar.chip} data-active={aspect === ratio || undefined} onClick={() => lock(ratio)}>
+        <button key={label} className={bar.chip} data-active={sameRatio(aspect, ratio) || undefined} onClick={() => lock(ratio)}>
           {label}
         </button>
       ))}

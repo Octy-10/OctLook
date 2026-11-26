@@ -30,7 +30,12 @@ export const viewActions = {
   fit: () => setView((v) => ({ ...v, fit: true })),
   actualSize: () => setView((v) => ({ ...v, scale: 1, x: 0, y: 0, fit: false })),
   toggleFit: () => (useViewState.getState().view.fit ? viewActions.actualSize() : viewActions.fit()),
-  rotate: (direction: 1 | -1) => setView((v) => ({ ...v, rotation: (v.rotation + direction * 90 + 360) % 360, x: 0, y: 0 })),
+  rotate: (direction: 1 | -1) => {
+    setView((v) => ({ ...v, rotation: (v.rotation + direction * 90 + 360) % 360, x: 0, y: 0 }));
+    // A locked crop ratio is an on-screen shape: turning the image turns it too (16:9 → 9:16).
+    const { draft, aspect, set } = useEditState.getState();
+    if (draft && aspect) set({ aspect: 1 / aspect });
+  },
   flipX: () => setView((v) => ({ ...v, flipX: !v.flipX })),
   flipY: () => setView((v) => ({ ...v, flipY: !v.flipY })),
 };
