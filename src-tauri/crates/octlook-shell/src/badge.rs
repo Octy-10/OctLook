@@ -1,6 +1,7 @@
 //! Format badge in the thumbnail's bottom-right corner, so a PSD can be
-//! told apart from a flattened PNG at a glance. Generic labels in family
-//! colours: vendor logos are trademarks and are never embedded.
+//! told apart from a flattened PNG at a glance. Plain text labels in each
+//! app's own colours (Ps blue on navy, Ai orange on brown…) so they read like
+//! the app icons users know; vendor logos are trademarks and never embedded.
 //! Skipped where Explorer stamps the default app's icon there (see `overlay`).
 
 use image::{Rgba, RgbaImage};
@@ -46,10 +47,10 @@ pub fn apply(img: &mut RgbaImage, ext: &str) {
     let margin = (height * 0.28).max(2.0).round();
     let (x0, y0) = (w - margin - width, h - margin - height);
     let rect = RoundRect { x0, y0, x1: x0 + width, y1: y0 + height, radius: height * 0.3 };
-    let color = family_color(ext);
+    let (background, ink) = palette(ext);
     for py in y0.floor().max(0.0) as u32..(rect.y1.ceil() as u32).min(img.height()) {
         for px in x0.floor().max(0.0) as u32..(rect.x1.ceil() as u32).min(img.width()) {
-            blend(img.get_pixel_mut(px, py), color, rect.coverage(px as f32 + 0.5, py as f32 + 0.5) * OPACITY);
+            blend(img.get_pixel_mut(px, py), background, rect.coverage(px as f32 + 0.5, py as f32 + 0.5) * OPACITY);
         }
     }
 
@@ -58,24 +59,33 @@ pub fn apply(img: &mut RgbaImage, ext: &str) {
     for (i, &m) in text.coverage.iter().enumerate() {
         let (px, py) = (tx + (i as u32 % text.width) as i64, ty + (i as u32 / text.width) as i64);
         if m > 0 && px >= 0 && py >= 0 && (px as u32) < img.width() && (py as u32) < img.height() {
-            blend(img.get_pixel_mut(px as u32, py as u32), [255; 3], m as f32 / 255.0);
+            blend(img.get_pixel_mut(px as u32, py as u32), ink, m as f32 / 255.0);
         }
     }
 }
 
-fn family_color(ext: &str) -> [u8; 3] {
+const WHITE: [u8; 3] = [0xFF; 3];
+
+/// (background, label) colours, taken from each app's own icon.
+fn palette(ext: &str) -> ([u8; 3], [u8; 3]) {
     match format::from_extension(ext, b"") {
-        Some(Format::Psd) => [0x1F, 0x6F, 0xEB],
-        Some(Format::Svg) => [0xE8, 0x8A, 0x1A],
-        Some(Format::Ai { .. } | Format::Eps) => [0xE0, 0x7A, 0x00],
-        Some(Format::Cdr) => [0x2B, 0x93, 0x48],
-        Some(Format::Indd) => [0xD0, 0x31, 0x6A],
-        Some(Format::Affinity) => [0x6C, 0x47, 0xD9],
-        Some(Format::ZipPreview("Sketch")) => [0xD9, 0x92, 0x00],
-        Some(Format::ZipPreview("Adobe XD")) => [0xB8, 0x2A, 0x9C],
-        Some(Format::ZipPreview("Figma")) => [0x84, 0x4C, 0xF0],
-        Some(Format::ZipPreview(_)) => [0x23, 0x83, 0xC8],
-        _ => [0x50, 0x50, 0x58],
+        Some(Format::Psd) => ([0x00, 0x1E, 0x36], [0x31, 0xA8, 0xFF]),
+        Some(Format::Ai { .. } | Format::Eps) => ([0x33, 0x00, 0x00], [0xFF, 0x9A, 0x00]),
+        Some(Format::Indd) => ([0x49, 0x02, 0x1F], [0xFF, 0x33, 0x66]),
+        Some(Format::ZipPreview("Adobe XD")) => ([0x47, 0x01, 0x37], [0xFF, 0x61, 0xF6]),
+        Some(Format::Cdr) => ([0x1E, 0x8E, 0x3E], WHITE),
+        Some(Format::ZipPreview("Sketch")) => ([0xFD, 0xB3, 0x00], [0x1A, 0x1A, 0x1A]),
+        Some(Format::ZipPreview("Figma")) => ([0x1E, 0x1E, 0x1E], WHITE),
+        Some(Format::ZipPreview("Procreate")) => ([0x14, 0x14, 0x14], WHITE),
+        Some(Format::ZipPreview("Krita")) => ([0x26, 0x7E, 0xD2], WHITE),
+        // One extension per Affinity app, each with its own colour.
+        Some(Format::Affinity) => match ext.to_ascii_lowercase().as_str() {
+            "afphoto" => ([0x7B, 0x3F, 0xD6], WHITE),
+            "afpub" => ([0xC9, 0x28, 0x4D], WHITE),
+            _ => ([0x1B, 0x72, 0xBE], WHITE),
+        },
+        Some(Format::Svg) => ([0xFF, 0xB1, 0x3B], [0x1A, 0x1A, 0x1A]),
+        _ => ([0x50, 0x50, 0x58], WHITE),
     }
 }
 
@@ -191,7 +201,8 @@ mod tests {
         apply(&mut img, "psd");
         assert_eq!(img.get_pixel(10, 10)[3], 0, "top-left untouched");
         assert!((200..250).any(|x| img.get_pixel(x, 240)[3] > 200), "badge painted bottom-right");
-        assert!((200..250).flat_map(|x| (215..250).map(move |y| (x, y))).any(|(x, y)| img.get_pixel(x, y)[0] > 200), "white label ink");
+        // Photoshop's label blue (#31A8FF) on its navy (#001E36).
+        assert!((200..250).flat_map(|x| (215..250).map(move |y| (x, y))).any(|(x, y)| img.get_pixel(x, y)[2] > 200), "blue label ink");
     }
 
     #[test]

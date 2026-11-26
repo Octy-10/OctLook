@@ -4,6 +4,7 @@ import { useColorProbe } from "../../hooks/useColorProbe";
 import { usePdfPage } from "../../hooks/usePdfPage";
 import { useElementSize } from "../../hooks/useElementSize";
 import type { SourceState } from "../../hooks/useSource";
+import type { ImageSource } from "../../lib/source";
 import { useViewport, type StageContent } from "../../hooks/useViewport";
 import { colorMatrix, isNeutral } from "../../lib/edits";
 import { cssTransform, exifOrientation, visibleRect } from "../../lib/viewport";
@@ -21,7 +22,8 @@ import styles from "./Stage.module.css";
 const PIXELATED_FROM = 3;
 const ADJUST_FILTER = "octlook-adjust";
 
-export function Stage({ source, loading, error }: SourceState) {
+/** The zoomable, editable stage for images and design files. */
+export function Stage({ source, loading, error }: Omit<SourceState, "source"> & { source: ImageSource | null }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const size = useElementSize(stageRef);
   const pageNumber = useViewState((s) => s.page);
@@ -130,8 +132,13 @@ export function Stage({ source, loading, error }: SourceState) {
       {loading && <div className={styles.progress} />}
       {error && <StageError message={error} />}
       {!error && source?.meta.source === "preview" && (
-        <div className={styles.badge} data-tip="该格式无法完整渲染，显示的是设计软件保存时内嵌的预览图" data-tip-side="bottom">
-          内嵌预览
+        <div
+          className={styles.badge}
+          data-tip={source.meta.note ?? "该格式无法完整渲染，显示的是设计软件保存时内嵌的预览图"}
+          data-tip-side="bottom"
+          data-tip-align="start"
+        >
+          内嵌预览{source.kind !== "pdf" && ` · ${source.width} × ${source.height}`}
         </div>
       )}
       {probe.probe && <Loupe probe={probe.probe} />}

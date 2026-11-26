@@ -52,6 +52,11 @@
 !macroend
 
 !macro NSIS_HOOK_PREUNINSTALL
+  ; The app's own "start with Windows" entry (Space preview), written per user.
+  ; Updates run this uninstaller too (/UPDATE): they must keep it.
+  ${If} $UpdateMode <> 1
+    DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "OctLook"
+  ${EndIf}
   !insertmacro OCTLOOK_REGSVR32 "/u"
   ExecWait '"$INSTDIR\${MAINBINARYNAME}.exe" --unregister-shell'
   !insertmacro OCTLOOK_MOVE_ASIDE

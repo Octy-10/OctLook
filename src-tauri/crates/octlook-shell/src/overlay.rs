@@ -4,7 +4,10 @@
 
 use windows::{
     core::{HSTRING, PCWSTR, PWSTR},
-    Win32::UI::Shell::{AssocQueryStringW, ASSOCF_INIT_IGNOREUNKNOWN, ASSOCSTR, ASSOCSTR_EXECUTABLE, ASSOCSTR_PROGID},
+    Win32::UI::Shell::{
+        AssocGetPerceivedType, AssocQueryStringW, Common::PERCEIVED_TYPE_IMAGE, ASSOCF_INIT_IGNOREUNKNOWN, ASSOCSTR,
+        ASSOCSTR_EXECUTABLE, ASSOCSTR_PROGID,
+    },
 };
 use windows_registry::{CLASSES_ROOT, CURRENT_USER};
 
@@ -16,6 +19,10 @@ pub fn shown(ext: &str) -> bool {
         return false;
     }
     let dotted = format!(".{ext}");
+    // Explorer never stamps image-type files (PSD registers itself as one).
+    if is_image(&dotted) {
+        return false;
+    }
     // No associated app: nothing to stamp.
     if assoc(ASSOCSTR_EXECUTABLE, &dotted).is_none() {
         return false;
@@ -25,6 +32,13 @@ pub fn shown(ext: &str) -> bool {
         .and_then(|progid| CLASSES_ROOT.open(progid).and_then(|k| k.get_string("TypeOverlay")).ok())
         .is_some_and(|overlay| overlay.is_empty());
     !opted_out
+}
+
+fn is_image(dotted: &str) -> bool {
+    let mut kind = Default::default();
+    let mut flags = 0;
+    // SAFETY: both out-pointers are valid for the call; the type name is not requested.
+    unsafe { AssocGetPerceivedType(&HSTRING::from(dotted), &mut kind, &mut flags, None) }.is_ok() && kind == PERCEIVED_TYPE_IMAGE
 }
 
 /// Resolves an association string the way Explorer does, honouring the

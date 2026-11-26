@@ -130,6 +130,13 @@
   font-size: 11.5px;
   letter-spacing: 0.01em;
 }
+/* Its tooltip is a sentence, not a label: let it wrap. */
+.badge:hover::after {
+  width: max-content;
+  max-width: 300px;
+  white-space: normal;
+  line-height: 1.5;
+}
 
 .loupe {
   position: fixed;

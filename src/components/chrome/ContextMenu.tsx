@@ -82,7 +82,7 @@ export function ContextMenu({ at, onClose }: { at: Point; onClose(): void }) {
       <div className={styles.separator} />
       <Item icon={<ScanText {...ICON} />} label="提取文字" shortcut="O" onSelect={editActions.extractText} />
       <Item icon={<Info {...ICON} />} label="文件信息" shortcut="I" checked={panel === "info"} onSelect={() => useViewState.getState().togglePanel("info")} />
-      <Item icon={<Save {...ICON} />} label="导出" shortcut="Ctrl S" onSelect={editActions.export} />
+      <Item icon={<Save {...ICON} />} label="另存为" shortcut="Ctrl S" onSelect={editActions.export} />
       <div className={styles.separator} />
       <Item icon={<Trash2 {...ICON} />} label={TRASH_LABEL} shortcut="Del" danger onSelect={fileActions.trash} />
     </div>

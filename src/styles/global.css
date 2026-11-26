@@ -186,6 +186,13 @@ input[type="range"]:hover::-webkit-slider-thumb {
   bottom: auto;
   top: calc(100% + 10px);
 }
+/* Longer explanations wrap instead of running off the edge. */
+[data-tip-wrap]:hover::after {
+  width: max-content;
+  max-width: 220px;
+  white-space: normal;
+  line-height: 1.5;
+}
 /* Anchored to one edge of the element, for controls next to a clipping border. */
 [data-tip-align="start"]:hover::after {
   left: 0;

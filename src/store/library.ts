@@ -12,6 +12,8 @@ interface LibraryState {
   step(delta: number): void;
   /** Drops the current entry after it was deleted on disk. */
   removeCurrent(): void;
+  /** Leaves the folder: back to the home screen. */
+  close(): void;
 }
 
 const normalize = (p: string) => p.replace(/[\/]+/g, "/").toLowerCase();
@@ -45,6 +47,8 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     const next = entries.filter((_, i) => i !== index);
     set({ entries: next, index: next.length ? Math.min(index, next.length - 1) : -1 });
   },
+
+  close: () => set({ dir: null, entries: [], index: -1 }),
 }));
 
 export const useCurrentEntry = () => useLibrary((s) => s.entries[s.index] ?? null);

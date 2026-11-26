@@ -18,8 +18,12 @@ flate2 = "1"
 kamadak-exif = "0.6"
 base64 = "0.22"
 memchr = "2"
+chardetng = "0.1"
+encoding_rs = "0.8"
+ttf-parser = "0.25"
 rayon = "1"
 resvg = { version = "0.45.1", default-features = false, features = ["text", "system-fonts", "raster-images"] }
+lofty = { version = "0.22.2", default-features = false }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-core-foundation = { version = "0.3", default-features = false, features = ["std", "CFURL", "CFCGTypes"] }

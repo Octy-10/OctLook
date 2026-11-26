@@ -24,13 +24,48 @@ export interface FileInfo {
   exif: ExifEntry[];
 }
 
+/** How a file is presented (see `format::Category`): images get the editing stage, the rest their own viewers. */
+export type Category = "image" | "video" | "audio" | "text" | "font";
+
 /** Metadata describing how a file was decoded (see `src-tauri/src/decode`). */
 export interface DecodeMeta {
   format: string;
+  category: Category;
   source: "full" | "preview";
   detail: string | null;
   orientation: number;
   originalSize: [number, number] | null;
+  /** Why only an embedded preview could be shown, when the decoder knows. */
+  note: string | null;
+}
+
+export interface DefaultApp {
+  name: string;
+  /** PNG bytes of the app icon; empty when it could not be read. */
+  icon: number[];
+}
+
+export interface TextFile {
+  text: string;
+  encoding: string;
+  /** Only the first 2 MB were read. */
+  truncated: boolean;
+}
+
+export interface FontInfo {
+  family: string | null;
+  style: string | null;
+  version: string | null;
+  designer: string | null;
+  glyphs: number;
+  faces: number;
+  cjk: boolean;
+}
+
+/** Resident mode (Windows): Space preview from Explorer, and starting with the system. */
+export interface ResidentSettings {
+  spacePreview: boolean;
+  autostart: boolean;
 }
 
 export interface FrameHeader extends DecodeMeta {
@@ -58,9 +93,21 @@ export const api = {
   thumbnail: (path: string, size: number) => invoke<ArrayBuffer>("thumbnail", { path, size }).then(parseFrame),
   listFolder: (path: string) => invoke<Listing>("list_folder", { path }),
   fileInfo: (path: string) => invoke<FileInfo>("file_info", { path }),
+  /** Up to `limit` bytes (2 MB at most) of a text file. */
+  readText: (path: string, limit?: number) => invoke<TextFile>("read_text", { path, limit }),
+  fontInfo: (path: string) => invoke<FontInfo>("font_info", { path }),
+  defaultApp: (path: string) => invoke<DefaultApp | null>("default_app", { path }),
+  openWithDefault: (path: string) => invoke<void>("open_with_default", { path }),
   moveToTrash: (path: string) => invoke<void>("move_to_trash", { path }),
   launchPath: () => invoke<string | null>("launch_path"),
   supportedExtensions: () => invoke<string[]>("supported_extensions"),
+  residentSettings: () => invoke<ResidentSettings>("resident_settings"),
+  setSpacePreview: (on: boolean) => invoke<ResidentSettings>("set_space_preview", { on }),
+  setAutostart: (on: boolean) => invoke<ResidentSettings>("set_autostart", { on }),
+  /** Sizes the Space preview to its file (`width` × `height` CSS px, chrome included) and shows it. */
+  quicklookPresent: (width: number, height: number) => invoke<void>("quicklook_present", { width, height }),
+  quicklookClose: () => invoke<void>("quicklook_close"),
+  openInMain: (path: string) => invoke<void>("open_in_main", { path }),
   /** Text in the canvas, recognised offline (PP-OCRv5). Body layout `[RGBA pixels][u32 LE width]`. */
   recognizeText(canvas: HTMLCanvasElement) {
     const { width, height } = canvas;
@@ -83,5 +130,8 @@ export const api = {
 
 /** URL the WebView can load directly through Tauri's asset protocol. */
 export const assetUrl = (path: string) => convertFileSrc(path);
+
+/** Object URL for an encoded image frame; the caller revokes it. */
+export const frameUrl = ({ header, payload }: Frame) => URL.createObjectURL(new Blob([payload], { type: header.mime ?? "" }));
 
 export const errorMessage = (e: unknown) => (e instanceof Error ? e.message : String(e));

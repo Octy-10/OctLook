@@ -1,9 +1,9 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, FileText, Film, Music, Play, Type, type LucideIcon } from "lucide-react";
 
 import { useAsync } from "../../hooks/useAsync";
 import { useElementSize } from "../../hooks/useElementSize";
-import type { FileEntry } from "../../lib/ipc";
+import type { Category, FileEntry } from "../../lib/ipc";
 import { getThumbnail } from "../../lib/thumbs";
 import { useLibrary } from "../../store/library";
 import { useViewState } from "../../store/view";
@@ -20,10 +20,34 @@ const THUMB_PX = 160;
 const loadThumb = (path: string) => getThumbnail(path, THUMB_PX);
 const extension = (name: string) => name.slice(name.lastIndexOf(".") + 1).toUpperCase();
 
+/** Stand-ins for files nothing could be drawn for (audio without cover art, undecodable video…). */
+const ICONS: Partial<Record<Category, LucideIcon>> = { video: Film, audio: Music, text: FileText, font: Type };
+
 const Thumb = memo(function Thumb({ entry }: { entry: FileEntry }) {
-  const url = useAsync(entry.path, loadThumb);
-  if (url) return <img src={url} alt="" draggable={false} decoding="async" />;
-  return <span className={styles.ext} data-pending={url === undefined || undefined}>{extension(entry.name)}</span>;
+  const thumb = useAsync(entry.path, loadThumb);
+  const Icon = thumb && ICONS[thumb.category];
+  if (thumb?.url) {
+    return (
+      <>
+        <img src={thumb.url} alt="" draggable={false} decoding="async" />
+        <span className={styles.badge}>{extension(entry.name)}</span>
+        {thumb.category === "video" && (
+          <span className={styles.play}>
+            <Play size={8} fill="currentColor" strokeWidth={0} />
+          </span>
+        )}
+      </>
+    );
+  }
+  if (Icon) {
+    return (
+      <span className={styles.kind}>
+        <Icon size={20} strokeWidth={1.5} />
+        <span className={styles.ext}>{extension(entry.name)}</span>
+      </span>
+    );
+  }
+  return <span className={styles.ext} data-pending={thumb === undefined || undefined}>{extension(entry.name)}</span>;
 });
 
 /** Drawer tab on the strip's top-left edge; it stays at the window's bottom-left while the strip is hidden. */

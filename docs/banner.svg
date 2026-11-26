@@ -32,6 +32,10 @@
       <stop offset="0.3" stop-color="#FFF" stop-opacity="0.06"/>
       <stop offset="1" stop-color="#FFF" stop-opacity="0.02"/>
     </linearGradient>
+    <linearGradient id="key" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3A3A41"/>
+      <stop offset="1" stop-color="#1F1F24"/>
+    </linearGradient>
     <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#000" stop-opacity="0"/>
       <stop offset="1" stop-color="#000"/>
@@ -61,7 +65,7 @@
 
   <!-- Headline -->
   <text x="640" y="222" fill="url(#headline)" font-size="64" font-weight="700" text-anchor="middle" letter-spacing="-1.5">设计稿，一眼看透。</text>
-  <text x="640" y="270" fill="#86868B" font-size="21" font-weight="500" text-anchor="middle">PSD、AI、CDR、Sketch、RAW 秒开 · 离线识别文字 · Windows 与 macOS</text>
+  <text x="640" y="270" fill="#86868B" font-size="21" font-weight="500" text-anchor="middle">PSD、AI、CDR、Sketch、RAW 秒开 · 选中按空格即预览 · 开源免费无广告</text>
 
   <!-- Product shot -->
   <g filter="url(#drop)">
@@ -123,6 +127,16 @@
 
     <!-- Glass rim -->
     <rect x="230.5" y="318.5" width="819" height="519" rx="13.5" fill="none" stroke="url(#rim)"/>
+  </g>
+
+  <!-- The space bar that opens it from Explorer -->
+  <g transform="rotate(-6 1060 330)">
+    <g filter="url(#drop)">
+      <rect x="980" y="300" width="164" height="54" rx="12" fill="url(#key)"/>
+    </g>
+    <rect x="980.5" y="300.5" width="163" height="53" rx="11.5" fill="none" stroke="#FFF" stroke-opacity="0.18"/>
+    <line x1="994" y1="301.5" x2="1130" y2="301.5" stroke="#FFF" stroke-opacity="0.24"/>
+    <text x="1062" y="333" fill="#F5F5F7" font-size="17" font-weight="600" text-anchor="middle" letter-spacing="5">空格</text>
   </g>
 
   <!-- Product dissolves into the page -->

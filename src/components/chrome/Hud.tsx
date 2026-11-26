@@ -1,8 +1,6 @@
 import { useState, type ReactNode } from "react";
 import {
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ChevronUp,
   Crop,
   PenLine,
@@ -16,9 +14,8 @@ import {
 import { editActions } from "../../lib/actions";
 import { isNeutral } from "../../lib/edits";
 import { keys } from "../../lib/platform";
-import type { ImageSource } from "../../lib/source";
+import { isImage, type Source } from "../../lib/source";
 import { useEditState } from "../../store/edit";
-import { useLibrary } from "../../store/library";
 import { useViewState } from "../../store/view";
 import styles from "./Hud.module.css";
 
@@ -45,7 +42,7 @@ const Divider = () => <span className={styles.divider} />;
  * Floating, auto-hiding control capsule. It carries only the primary tools;
  * the settings menu and the zoom level live in the title bar.
  */
-export function Hud({ source, hidden }: { source: ImageSource | null; hidden: boolean }) {
+export function Hud({ source, hidden }: { source: Source | null; hidden: boolean }) {
   // Narrow selectors: the capsule must not re-render on every pan frame.
   const turned = useViewState((s) => s.view.rotation !== 0 || s.view.flipX || s.view.flipY);
   const page = useViewState((s) => s.page);
@@ -55,11 +52,11 @@ export function Hud({ source, hidden }: { source: ImageSource | null; hidden: bo
   const cropping = useEditState((s) => s.draft !== null);
   const annotating = useEditState((s) => s.tool !== null);
   const edited = useEditState((s) => s.crop !== null || s.annotations.length > 0 || !isNeutral(s.adjust)) || turned;
-  const step = useLibrary((s) => s.step);
-  const single = useLibrary((s) => s.entries.length < 2);
   const pages = source?.kind === "pdf" ? source.pages : 1;
   // Never fades out from under a pointer resting on it.
   const [hovered, setHovered] = useState(false);
+  // Only images have tools: no empty capsule over video, text or fonts.
+  if (!isImage(source)) return null;
 
   return (
     <div
@@ -69,10 +66,6 @@ export function Hud({ source, hidden }: { source: ImageSource | null; hidden: bo
       onPointerLeave={() => setHovered(false)}
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <Tool label="上一张" tip="上一张  ←" onClick={() => step(-1)} disabled={single}>
-        <ChevronLeft {...ICON} />
-      </Tool>
-      <Divider />
       <Tool label="裁剪" tip="裁剪  X" onClick={editActions.toggleCrop} active={cropping}>
         <Crop {...ICON} />
       </Tool>
@@ -108,12 +101,8 @@ export function Hud({ source, hidden }: { source: ImageSource | null; hidden: bo
         </>
       )}
       <Divider />
-      <Tool label="导出" tip="导出  Ctrl S" onClick={editActions.export}>
+      <Tool label="另存为" tip="另存为  Ctrl S" onClick={editActions.export}>
         <Save {...ICON} />
-      </Tool>
-      <Divider />
-      <Tool label="下一张" tip="下一张  →" onClick={() => step(1)} disabled={single}>
-        <ChevronRight {...ICON} />
       </Tool>
     </div>
   );

@@ -89,6 +89,56 @@
   padding: 0 4px 0 10px;
   color: var(--float-text);
 }
+.field[data-disabled] {
+  opacity: 0.4;
+}
+/* A label with an optional help mark; the mark's tip is anchored to the whole row. */
+.label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.field:has(.help) {
+  position: relative;
+}
+.help {
+  position: static;
+  display: grid;
+  color: var(--float-muted);
+  cursor: help;
+}
+.help:hover {
+  color: var(--float-text);
+}
+.switch {
+  position: relative;
+  flex: none;
+  width: 30px;
+  height: 18px;
+  margin-right: 4px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--float-muted) 45%, transparent);
+  transition: background var(--dur) var(--ease);
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  transition: translate var(--dur) var(--ease);
+}
+.switch[aria-checked="true"] {
+  background: var(--accent);
+}
+.switch[aria-checked="true"]::after {
+  translate: 12px 0;
+}
+
 .segments {
   display: flex;
   padding: 2px;

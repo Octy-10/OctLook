@@ -114,6 +114,14 @@ export function useLaunchPath() {
   }, []);
 }
 
+/** The main window hid to the tray (Space preview keeps the app running): let go of the open file. */
+export function useReleaseOnHide() {
+  useEffect(() => {
+    const unlisten = listen("main-hidden", () => library().close());
+    return () => void unlisten.then((off) => off());
+  }, []);
+}
+
 /** Native file drops; returns true while a drag hovers the window. */
 export function useFileDrop(): boolean {
   const [hovering, setHovering] = useState(false);

@@ -21,8 +21,8 @@ const MAX_COMPOSITE_PIXELS: usize = 64_000_000;
 pub fn thumbnail<R: Read + Seek>(r: &mut R, ext: &str, size: u32) -> Result<RgbaImage> {
     let len = r.seek(SeekFrom::End(0))?;
     r.rewind()?;
-    let mut magic = Vec::with_capacity(8);
-    r.by_ref().take(8).read_to_end(&mut magic)?;
+    let mut magic = Vec::with_capacity(format::HEAD_LEN);
+    r.by_ref().take(format::HEAD_LEN as u64).read_to_end(&mut magic)?;
     r.rewind()?;
     let format = format::from_extension(ext, &magic)
         .filter(|f| f.decodes_from_bytes())

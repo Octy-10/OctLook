@@ -20,6 +20,22 @@
   letter-spacing: -0.01em;
   color: var(--text-2);
 }
+/* The brand doubles as the way home once a file is open. */
+.home {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: -6px;
+  padding: 3px 6px;
+  border-radius: var(--radius-s);
+  font: inherit;
+  color: inherit;
+  transition: background var(--dur) var(--ease);
+}
+.home:hover {
+  background: var(--hover);
+  color: var(--text);
+}
 
 .title {
   display: flex;
@@ -69,6 +85,11 @@
   justify-self: end;
   display: flex;
   height: 100%;
+}
+/* "Open in its app": the app's own icon, at caption-button scale. */
+.appIcon {
+  width: 18px;
+  height: 18px;
 }
 /* Positions the settings menu below its toggle. */
 .anchor {

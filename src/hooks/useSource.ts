@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 
 import { errorMessage } from "../lib/ipc";
-import { getSource, retainSources, type ImageSource } from "../lib/source";
+import { getSource, retainSources, type Source } from "../lib/source";
 import { useLibrary } from "../store/library";
 
 export interface SourceState {
   /** Last successfully loaded source; stays on stage while the next loads. */
-  source: ImageSource | null;
+  source: Source | null;
   loading: boolean;
   error: string | null;
 }

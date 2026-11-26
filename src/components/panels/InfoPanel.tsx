@@ -6,7 +6,7 @@ import { usePalette } from "../../hooks/usePalette";
 import { fileActions } from "../../lib/actions";
 import { formatBytes, formatDate } from "../../lib/format";
 import { api, type ExifEntry } from "../../lib/ipc";
-import type { ImageSource } from "../../lib/source";
+import { isImage, type ImageSource, type Source } from "../../lib/source";
 import { useCurrentEntry } from "../../store/library";
 import { toast } from "../../store/toast";
 import { Panel } from "./Panel";
@@ -51,12 +51,13 @@ function printSize(source: ImageSource): string | null {
 
 const copyColor = (hex: string) => void navigator.clipboard.writeText(hex).then(() => toast(`已复制 ${hex}`));
 
-export function InfoPanel({ source }: { source: ImageSource | null }) {
+export function InfoPanel({ source }: { source: Source | null }) {
   const entry = useCurrentEntry();
   const info = useAsync(entry?.path ?? null, api.fileInfo);
-  const palette = usePalette(source);
+  const image = isImage(source) ? source : null;
+  const palette = usePalette(image);
   if (!entry) return null;
-  const print = source && printSize(source);
+  const print = image && printSize(image);
 
   return (
     <Panel
@@ -76,9 +77,13 @@ export function InfoPanel({ source }: { source: ImageSource | null }) {
         {source && (
           <>
             <Row label="格式">{source.meta.detail ? `${source.meta.format} · ${source.meta.detail}` : source.meta.format}</Row>
-            <Row label="尺寸">{dimensions(source)}</Row>
-            {print && <Row label="印刷">{print}</Row>}
-            <Row label="渲染">{source.meta.source === "full" ? "完整渲染" : "内嵌预览"}</Row>
+            {image && (
+              <>
+                <Row label="尺寸">{dimensions(image)}</Row>
+                {print && <Row label="印刷">{print}</Row>}
+                <Row label="渲染">{image.meta.source === "full" ? "完整渲染" : "内嵌预览"}</Row>
+              </>
+            )}
           </>
         )}
         <Row label="大小">{formatBytes(entry.size)}</Row>

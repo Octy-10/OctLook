@@ -3,8 +3,10 @@
 
 pub mod decode;
 mod error;
+pub mod font;
 pub mod format;
 pub mod meta;
+pub mod text;
 pub mod thumbnail;
 
 pub use error::{Error, Result};

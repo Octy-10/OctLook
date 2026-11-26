@@ -8,11 +8,14 @@
 //! * A classic context-menu verb, "用 OctLook 打开", on every supported type.
 //!
 //! The extension list comes from `octlook_core::format`, the single source
-//! of truth shared with the decoder and the thumbnail handler.
+//! of truth shared with the decoder and the thumbnail handler. Only images
+//! and design files are registered: video, audio, text and fonts keep their
+//! own apps and Explorer previews untouched (an "Open with" entry on `.ttf`
+//! alone was enough to break Windows' font thumbnails).
 
 use std::path::Path;
 
-use octlook_core::format;
+use octlook_core::format::{self, Category};
 use windows::Win32::UI::Shell::{SHChangeNotify, SHCNE_ASSOCCHANGED, SHCNF_IDLIST};
 use windows_registry::{Result, LOCAL_MACHINE};
 
@@ -57,7 +60,14 @@ fn register(exe: &Path) -> Result<()> {
     capabilities.set_string("ApplicationIcon", &icon)?;
     let associations = capabilities.create("FileAssociations")?;
 
-    for (ext, family) in format::entries() {
+    // Earlier versions registered every viewable type: withdraw the others.
+    for (ext, _) in format::entries().filter(|(_, family)| family.category() != Category::Image) {
+        remove_type(&classes, ext);
+        let _ = associations.remove_value(format!(".{ext}"));
+        let _ = supported.remove_value(format!(".{ext}"));
+    }
+
+    for (ext, family) in format::entries().filter(|(_, family)| family.category() == Category::Image) {
         let progid = progid(ext);
         let class = classes.create(&progid)?;
         class.set_string("", format!("{} 文件（.{ext}）", family.label()))?;
@@ -84,17 +94,22 @@ fn unregister(exe: &Path) -> Result<()> {
     let classes = LOCAL_MACHINE.create(r"Software\Classes")?;
     let _ = classes.remove_tree(classes_app(exe));
     for (ext, _) in format::entries() {
-        let _ = classes.remove_tree(progid(ext));
-        let _ = classes.remove_tree(verb_key(ext));
-        if let Ok(open_with) = classes.open(format!(r".{ext}\OpenWithProgids")) {
-            let _ = open_with.remove_value(progid(ext));
-        }
+        remove_type(&classes, ext);
     }
     let _ = LOCAL_MACHINE.remove_tree(r"Software\OctLook");
     if let Ok(apps) = LOCAL_MACHINE.create(r"Software\RegisteredApplications") {
         let _ = apps.remove_value(APP);
     }
     Ok(())
+}
+
+/// Drops OctLook's ProgID, context verb and "Open with" entry for `ext`.
+fn remove_type(classes: &windows_registry::Key, ext: &str) {
+    let _ = classes.remove_tree(progid(ext));
+    let _ = classes.remove_tree(verb_key(ext));
+    if let Ok(open_with) = classes.open(format!(r".{ext}\OpenWithProgids")) {
+        let _ = open_with.remove_value(progid(ext));
+    }
 }
 
 fn progid(ext: &str) -> String {

@@ -7,9 +7,33 @@
 
 .slider {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 5px 8px;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 5px 6px;
   color: var(--text-2);
+}
+.reset {
+  grid-row: 1;
+  grid-column: 3;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-s);
+  color: var(--text-3);
+  transition:
+    opacity var(--dur) var(--ease),
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.reset:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text);
+}
+/* Kept in the layout so values never shift as sliders move off neutral. */
+.reset:disabled {
+  opacity: 0;
+  pointer-events: none;
 }
 .slider output {
   font: 11.5px var(--mono);
@@ -46,7 +70,9 @@
   background: var(--hover);
   color: var(--text);
 }
-.chips button[data-active] {
+/* Must outrank the hover rule above: a selected chip stays selected under the pointer. */
+.chips button[data-active],
+.chips button[data-active]:hover:not(:disabled) {
   background: var(--selected-bg);
   color: var(--selected-fg);
   box-shadow: none;

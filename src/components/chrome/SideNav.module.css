@@ -1,0 +1,37 @@
+.nav {
+  position: absolute;
+  top: 50%;
+  margin-top: -28px; /* centred without translate: a half-pixel offset would blur the icon */
+  width: 36px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  background: var(--float-bg);
+  box-shadow:
+    0 0 0 1px var(--float-edge),
+    var(--float-shadow);
+  color: var(--float-icon);
+  z-index: 10;
+  transition:
+    opacity 200ms var(--ease),
+    right 240ms var(--ease),
+    color var(--dur) var(--ease);
+}
+.nav:hover {
+  color: var(--float-text);
+}
+.nav[data-side="left"] {
+  left: 12px;
+}
+.nav[data-side="right"] {
+  right: 12px;
+}
+/* Beside the side panel (12px inset + 288px wide + 12px gap). */
+.nav[data-side="right"][data-panel] {
+  right: 312px;
+}
+.nav[data-hidden]:not(:hover) {
+  opacity: 0;
+  pointer-events: none;
+}

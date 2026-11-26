@@ -1,10 +1,12 @@
 [package]
 name = "octlook"
-version = "0.1.0"
+version = "0.2.0"
+authors = ["十月"]
 description = "OctLook — a fast image viewer for designers"
 edition = "2021"
 license = "GPL-3.0-only"
 repository = "https://github.com/Octy-10/OctLook"
+homepage = "https://github.com/Octy-10"
 rust-version = "1.88"
 
 [lib]
@@ -17,7 +19,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 octlook-core = { path = "crates/octlook-core" }
 octlook-ocr = { path = "crates/octlook-ocr" }
-tauri = { version = "2", features = ["protocol-asset"] }
+tauri = { version = "2", features = ["protocol-asset", "tray-icon"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-process = "2"
@@ -34,7 +36,19 @@ tokio = { version = "1", features = ["sync"] }
 
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.6"
-windows = { version = "0.62", features = ["Win32_UI_Shell"] }
+windows = { version = "0.62", features = [
+    "Win32_Graphics_Gdi",
+    "Win32_System_Com",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Ole",
+    "Win32_System_Variant",
+    "Win32_UI_HiDpi",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+] }
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
 
 [workspace]
 members = ["crates/octlook-core", "crates/octlook-ocr", "crates/octlook-shell"]

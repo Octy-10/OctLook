@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "quicklook",
+  "description": "Space preview window: listens for files to show and drags itself",
+  "windows": [
+    "quicklook"
+  ],
+  "platforms": [
+    "windows"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging"
+  ]
+}

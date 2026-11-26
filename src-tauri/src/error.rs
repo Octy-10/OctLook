@@ -10,6 +10,10 @@ pub enum AppError {
     Ocr(#[from] octlook_ocr::Error),
     #[error("移至回收站失败：{0}")]
     Trash(#[from] trash::Error),
+    #[error("无法用关联程序打开：{0}")]
+    Launch(String),
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
     #[error("后台任务异常：{0}")]
     Task(String),
     #[error("请求格式无效")]

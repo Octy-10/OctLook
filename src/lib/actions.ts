@@ -79,6 +79,11 @@ export const fileActions = {
     if (path) await revealItemInDir(path).catch((e) => toast(errorMessage(e), "error"));
   },
 
+  async openWithDefault() {
+    const path = currentPath();
+    if (path) await api.openWithDefault(path).catch((e) => toast(errorMessage(e), "error"));
+  },
+
   async copyPath() {
     const path = currentPath();
     if (!path) return;
@@ -147,7 +152,7 @@ export const editActions = {
     try {
       const canvas = await renderEdited({ maxEdge, background: format === "jpeg" ? "#fff" : undefined });
       await api.writeFile(target, await encodeCanvas(canvas, format, lossy ? quality : undefined));
-      toast(`已导出 ${canvas.width} × ${canvas.height} ${label}`);
+      toast(`已保存 ${canvas.width} × ${canvas.height} ${label}`);
     } catch (e) {
       toast(errorMessage(e), "error");
     }

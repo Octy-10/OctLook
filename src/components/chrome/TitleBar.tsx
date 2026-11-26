@@ -1,10 +1,11 @@
 import { useCallback, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Settings } from "lucide-react";
+import { AppWindow, Settings } from "lucide-react";
 
-import { viewActions } from "../../lib/actions";
+import { useDefaultApp } from "../../hooks/useDefaultApp";
+import { fileActions, viewActions } from "../../lib/actions";
 import { isMac } from "../../lib/platform";
-import { useLibrary } from "../../store/library";
+import { useCurrentEntry, useLibrary } from "../../store/library";
 import { useViewState } from "../../store/view";
 import { Logo } from "../Logo";
 import { SettingsMenu } from "./SettingsMenu";
@@ -22,14 +23,24 @@ export function TitleBar({ maximized }: { maximized: boolean }) {
   const total = useLibrary((s) => s.entries.length);
   const zoom = useViewState((s) => Math.round(s.view.scale * 100));
   const fit = useViewState((s) => s.view.fit);
+  const app = useDefaultApp(useCurrentEntry()?.path ?? null);
   const [menu, setMenu] = useState(false);
   const closeMenu = useCallback(() => setMenu(false), []);
 
   return (
     <header className={styles.bar} data-tauri-drag-region>
       <div className={styles.brand} data-tauri-drag-region>
-        <Logo size={16} />
-        <span data-tauri-drag-region>OctLook</span>
+        {name ? (
+          <button className={styles.home} data-tip="返回主页" data-tip-side="bottom" data-tip-align="start" onClick={useLibrary.getState().close}>
+            <Logo size={16} />
+            <span>OctLook</span>
+          </button>
+        ) : (
+          <>
+            <Logo size={16} />
+            <span data-tauri-drag-region>OctLook</span>
+          </>
+        )}
         {name && (
           <button className={styles.zoom} data-tip={fit ? "实际大小  1" : "适应窗口  0"} data-tip-side="bottom" onClick={viewActions.toggleFit}>
             {zoom}%
@@ -51,6 +62,11 @@ export function TitleBar({ maximized }: { maximized: boolean }) {
       </div>
 
       <div className={styles.caption}>
+        {app && (
+          <button aria-label={`用 ${app.name} 打开`} data-tip={`用 ${app.name} 打开`} data-tip-side="bottom" onClick={fileActions.openWithDefault}>
+            {app.icon ? <img className={styles.appIcon} src={app.icon} alt="" draggable={false} /> : <AppWindow size={15} strokeWidth={1.75} />}
+          </button>
+        )}
         <div className={styles.anchor}>
           <button aria-label="设置" data-tip={menu ? undefined : "设置"} data-tip-side="bottom" data-active={menu || undefined} onClick={() => setMenu((open) => !open)}>
             <Settings size={15} strokeWidth={1.75} />

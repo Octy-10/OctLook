@@ -1,0 +1,320 @@
+/* Read-only viewers for video, audio, text and fonts (see DocumentStage). */
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  background: var(--bg);
+}
+.stage[data-kind="video"] {
+  background: var(--canvas-dark);
+}
+
+/* Video & audio */
+.player {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+/* Centre play button, shown only while paused. */
+.play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: rgb(0 0 0 / 0.5);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  transition: transform var(--dur) var(--ease);
+}
+.play > svg {
+  margin-left: 3px; /* optical centre of the triangle */
+}
+.play:active {
+  transform: translate(-50%, -50%) scale(0.94);
+}
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  outline: none;
+}
+.audio {
+  margin: auto;
+  width: min(420px, calc(100% - 48px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.cover {
+  width: 168px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-l);
+  background: linear-gradient(135deg, var(--accent-soft), transparent), var(--bg-raised);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--accent);
+  overflow: hidden;
+}
+.cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.audio h2 {
+  margin: 20px 0 4px;
+  max-width: 100%;
+  font-size: 15px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.audio p {
+  margin: 0 0 18px;
+  color: var(--text-3);
+  font-size: 12px;
+}
+.audio audio {
+  width: 100%;
+  outline: none;
+}
+
+/* Text & code */
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.textBar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: 12px;
+}
+.warn {
+  color: var(--accent);
+}
+.toggle {
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line-strong);
+  color: var(--text-2);
+}
+.toggle:hover {
+  background: var(--hover);
+}
+.code {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: auto;
+  user-select: text;
+}
+.code pre {
+  margin: 0;
+  padding: 14px 16px;
+  font: 12.5px/1.6 var(--mono);
+  tab-size: 4;
+  white-space: pre;
+}
+.code .gutter {
+  position: sticky;
+  left: 0;
+  padding-right: 12px;
+  text-align: right;
+  color: var(--text-3);
+  background: var(--bg);
+  border-right: 1px solid var(--line);
+  user-select: none;
+}
+.markdown {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 28px max(24px, calc(50% - 380px));
+  line-height: 1.75;
+  user-select: text;
+}
+.markdown :is(h1, h2, h3) {
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.markdown h1 {
+  font-size: 26px;
+}
+.markdown h2 {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+  font-size: 20px;
+}
+.markdown a {
+  color: var(--accent);
+}
+.markdown :is(code, pre) {
+  font-family: var(--mono);
+  font-size: 12.5px;
+}
+.markdown :not(pre) > code {
+  padding: 1px 5px;
+  border-radius: var(--radius-s);
+  background: var(--hover);
+}
+.markdown pre {
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  overflow: auto;
+}
+.markdown blockquote {
+  margin: 0;
+  padding-left: 14px;
+  border-left: 3px solid var(--line-strong);
+  color: var(--text-2);
+}
+.markdown table {
+  border-collapse: collapse;
+}
+.markdown :is(th, td) {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+}
+.markdown img {
+  max-width: 100%;
+}
+
+/* Font specimen */
+.font {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 28px 32px 40px;
+}
+.font header h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 400;
+}
+.font header p {
+  margin: 6px 0 0;
+  color: var(--text-3);
+  font-size: 12px;
+}
+.sample {
+  margin: 18px 0 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-raised);
+  color: var(--text);
+  outline: none;
+}
+.sample:focus {
+  border-color: var(--accent);
+}
+.font ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.font li {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.font li > span {
+  flex: none;
+  width: 28px;
+  color: var(--text-3);
+  font: 11px var(--mono);
+}
+.font li > div {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+.charset {
+  margin: 24px 0 0;
+  font-size: 22px;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+/* highlight.js tokens, following the UI theme. */
+.code :global(.hljs-comment),
+.code :global(.hljs-quote) {
+  color: var(--text-3);
+  font-style: italic;
+}
+.code :global(.hljs-keyword),
+.code :global(.hljs-selector-tag),
+.code :global(.hljs-built_in),
+.code :global(.hljs-meta) {
+  color: #c792ea;
+}
+.code :global(.hljs-string),
+.code :global(.hljs-regexp),
+.code :global(.hljs-addition) {
+  color: #a5d6a7;
+}
+.code :global(.hljs-number),
+.code :global(.hljs-literal),
+.code :global(.hljs-symbol) {
+  color: #f9b17a;
+}
+.code :global(.hljs-title),
+.code :global(.hljs-section),
+.code :global(.hljs-name) {
+  color: #82aaff;
+}
+.code :global(.hljs-attr),
+.code :global(.hljs-attribute),
+.code :global(.hljs-variable),
+.code :global(.hljs-type) {
+  color: #7fdbca;
+}
+.code :global(.hljs-deletion) {
+  color: #ff8a80;
+}
+:global(:root[data-theme="light"]) .code :global(.hljs-keyword),
+:global(:root[data-theme="light"]) .code :global(.hljs-built_in),
+:global(:root[data-theme="light"]) .code :global(.hljs-meta) {
+  color: #8839ef;
+}
+:global(:root[data-theme="light"]) .code :global(.hljs-string),
+:global(:root[data-theme="light"]) .code :global(.hljs-addition) {
+  color: #2e7d32;
+}
+:global(:root[data-theme="light"]) .code :global(.hljs-number),
+:global(:root[data-theme="light"]) .code :global(.hljs-literal) {
+  color: #c2410c;
+}
+:global(:root[data-theme="light"]) .code :global(.hljs-title),
+:global(:root[data-theme="light"]) .code :global(.hljs-name) {
+  color: #1d4ed8;
+}
+:global(:root[data-theme="light"]) .code :global(.hljs-attr),
+:global(:root[data-theme="light"]) .code :global(.hljs-variable),
+:global(:root[data-theme="light"]) .code :global(.hljs-type) {
+  color: #0f766e;
+}

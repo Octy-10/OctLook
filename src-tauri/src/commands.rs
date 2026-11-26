@@ -6,7 +6,7 @@ use parking_lot::Mutex;
 
 use octlook_core::{
     decode::{self, Purpose},
-    format, meta,
+    font, format, meta, text,
 };
 use tauri::{
     ipc::{InvokeBody, Request, Response},
@@ -14,6 +14,7 @@ use tauri::{
 };
 
 use crate::{
+    default_app,
     error::{AppError, Result},
     folder,
     ocr::Ocr,
@@ -60,6 +61,28 @@ pub async fn list_folder(path: PathBuf) -> Result<folder::Listing> {
 }
 
 #[tauri::command]
+pub async fn read_text(path: PathBuf, limit: Option<usize>) -> Result<text::TextFile> {
+    blocking(move || Ok(text::read(&path, limit)?)).await
+}
+
+#[tauri::command]
+pub async fn font_info(path: PathBuf) -> Result<font::FontInfo> {
+    blocking(move || Ok(font::info(&path)?)).await
+}
+
+/// The app that edits `path` (Photoshop for a PSD, a code editor for source…), never OctLook;
+/// None hides the button, as for files the viewer fully serves.
+#[tauri::command]
+pub async fn default_app(path: PathBuf) -> Result<Option<default_app::DefaultApp>> {
+    blocking(move || Ok(default_app::find(&path))).await
+}
+
+#[tauri::command]
+pub async fn open_with_default(path: PathBuf) -> Result<()> {
+    blocking(move || default_app::open(&path)).await
+}
+
+#[tauri::command]
 pub async fn file_info(path: PathBuf) -> Result<meta::FileInfo> {
     blocking(move || Ok(meta::file_info(&path)?)).await
 }
@@ -95,4 +118,42 @@ pub fn launch_path(launch: State<'_, LaunchPath>) -> Option<PathBuf> {
 #[tauri::command]
 pub fn supported_extensions() -> Vec<&'static str> {
     format::supported_extensions()
+}
+
+#[cfg(windows)]
+#[tauri::command]
+pub fn resident_settings(app: tauri::AppHandle) -> crate::resident::Settings {
+    crate::resident::settings(&app)
+}
+
+/// Async: it may create the preview window, which a sync command (on the main thread) cannot.
+#[cfg(windows)]
+#[tauri::command]
+pub async fn set_space_preview(app: tauri::AppHandle, on: bool) -> Result<crate::resident::Settings> {
+    crate::resident::set_space_preview(&app, on)
+}
+
+#[cfg(windows)]
+#[tauri::command]
+pub fn set_autostart(app: tauri::AppHandle, on: bool) -> Result<crate::resident::Settings> {
+    crate::resident::set_autostart(&app, on)
+}
+
+#[cfg(windows)]
+#[tauri::command]
+pub fn quicklook_present(window: tauri::WebviewWindow, width: f64, height: f64) -> Result<()> {
+    crate::spacebar::present(&window, width, height)
+}
+
+#[cfg(windows)]
+#[tauri::command]
+pub fn quicklook_close() {
+    crate::spacebar::close();
+}
+
+#[cfg(windows)]
+#[tauri::command]
+pub fn open_in_main(app: tauri::AppHandle, path: PathBuf) {
+    crate::spacebar::close();
+    crate::resident::show_main(&app, Some(path));
 }

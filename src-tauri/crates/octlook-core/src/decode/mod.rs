@@ -5,8 +5,12 @@
 //!   document bytes for viewing; empty for thumbnails (fetched on demand).
 //! * `Encoded` – an image extracted verbatim from a container (no re-encode).
 //! * `Pixels`  – RGBA8 decoded in Rust.
+//!
+//! Video, audio, text and fonts are `Native` too: `meta.category` sends them
+//! to their own viewers instead of the image stage.
 
 mod container;
+mod cover;
 mod embedded;
 #[cfg(target_os = "macos")]
 mod imageio;
@@ -28,7 +32,7 @@ use image::RgbaImage;
 use serde::Serialize;
 
 use crate::{
-    format::{self, Format},
+    format::{self, Category, Format},
     meta, Error, Result,
 };
 
@@ -58,12 +62,15 @@ pub enum Source {
 #[serde(rename_all = "camelCase")]
 pub struct Meta {
     pub format: &'static str,
+    pub category: Category,
     pub source: Source,
     pub detail: Option<String>,
     /// EXIF orientation (1–8) the frontend must apply.
     pub orientation: u16,
     /// Set when pixels were downscaled to fit GPU texture limits.
     pub original_size: Option<[u32; 2]>,
+    /// Why only an embedded preview could be shown, when the decoder knows.
+    pub note: Option<&'static str>,
 }
 
 pub struct Decoded {
@@ -73,7 +80,7 @@ pub struct Decoded {
 
 impl Decoded {
     fn new(format: Format, payload: Payload, source: Source) -> Self {
-        let meta = Meta { format: format.label(), source, detail: None, orientation: 1, original_size: None };
+        let meta = Meta { format: format.label(), category: format.category(), source, detail: None, orientation: 1, original_size: None, note: None };
         Self { payload, meta }
     }
 
@@ -86,7 +93,16 @@ impl Decoded {
         self.meta.orientation = orientation;
         self
     }
+
+    fn note(mut self, note: &'static str) -> Self {
+        self.meta.note = Some(note);
+        self
+    }
 }
+
+const AI_NOTE: &str =
+    "保存时未勾选「创建 PDF 兼容文件」，文件中只有这张小预览图。在 Illustrator 中勾选该项后重新保存，即可清晰显示。";
+const CDR_NOTE: &str = "CorelDRAW 的矢量内容是私有格式，暂无法直接渲染，这里显示的是文件内嵌的预览图。";
 
 /// Encoded previews returned to the frontend.
 pub(crate) struct Extracted {
@@ -114,13 +130,21 @@ pub fn decode(path: &Path, purpose: Purpose) -> Result<Decoded> {
             }
         },
         Format::Svg => Decoded::new(format, Payload::Native, Source::Full),
+        Format::Audio(_) if purpose == Purpose::Thumbnail => match cover::audio(path) {
+            Some(art) => Decoded::new(format, art.into(), Source::Full),
+            None => Decoded::new(format, Payload::Native, Source::Full),
+        },
+        // Played or shown by the WebView; thumbnails are drawn there too, from `meta.category`.
+        Format::Video(_) | Format::Audio(_) | Format::Text(_) | Format::Font(_) => {
+            Decoded::new(format, Payload::Native, Source::Full)
+        }
         Format::Pdf => Decoded::new(format, Payload::Pdf(pdf_bytes(purpose, || std::fs::read(path))?), Source::Full),
         Format::Ai { pdf: true } if purpose == Purpose::View => {
             let buf = std::fs::read(path)?;
             // An AI whose PDF part draws nothing (artwork kept only in Illustrator's
             // private data) would render blank: show its embedded preview instead.
             match pdf_art::is_blank(&buf).then(|| embedded::xmp_thumbnail(&buf)).flatten() {
-                Some(x) => Decoded::new(format, x.into(), Source::Preview),
+                Some(x) => Decoded::new(format, x.into(), Source::Preview).note(AI_NOTE),
                 None => Decoded::new(format, Payload::Pdf(buf), Source::Full),
             }
         }
@@ -146,7 +170,9 @@ const ZIP_PREVIEW: &str = "设计文件预览图";
 pub fn decode_bytes(buf: &[u8], format: Format, purpose: Purpose) -> Result<Decoded> {
     Ok(match format {
         Format::Ai { pdf: is_pdf } => match embedded::xmp_thumbnail(buf) {
-            Some(x) => Decoded::new(format, x.into(), Source::Preview),
+            // A PDF-compatible AI only lands here for thumbnails: no note needed.
+            Some(x) if is_pdf => Decoded::new(format, x.into(), Source::Preview),
+            Some(x) => Decoded::new(format, x.into(), Source::Preview).note(AI_NOTE),
             None if is_pdf => Decoded::new(format, Payload::Pdf(pdf_bytes(purpose, || Ok(buf.to_vec()))?), Source::Full),
             None => return Err(Error::NoPreview("该 AI 文件未包含 PDF 兼容内容与缩略图")),
         },
@@ -157,7 +183,7 @@ pub fn decode_bytes(buf: &[u8], format: Format, purpose: Purpose) -> Result<Deco
         },
         Format::Indd => preview(format, embedded::xmp_thumbnail(buf), "InDesign 缩略图")?,
         Format::Affinity => preview(format, embedded::largest_png(buf), "Affinity 缩略图")?,
-        Format::Cdr => preview(format, container::cdr_preview(buf)?, "CorelDRAW 缩略图")?,
+        Format::Cdr => preview(format, container::cdr_preview(buf)?, "CorelDRAW 缩略图")?.note(CDR_NOTE),
         Format::ZipPreview(_) => preview(format, container::zip_preview(Cursor::new(buf))?, ZIP_PREVIEW)?,
         other => return Err(Error::Unsupported(format!("{}（需要文件路径）", other.label()))),
     })

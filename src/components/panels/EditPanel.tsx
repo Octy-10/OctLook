@@ -26,8 +26,10 @@ const FLAGS: [key: Flag, label: string][] = [
 ];
 
 function Slider(props: { label: string; value: number; min: number; max: number; neutral: number; onChange(value: number): void }) {
+  const changed = props.value !== props.neutral;
+  const reset = () => props.onChange(props.neutral);
   return (
-    <label className={styles.slider} onDoubleClick={() => props.onChange(props.neutral)} data-changed={props.value !== props.neutral || undefined}>
+    <label className={styles.slider} onDoubleClick={reset} data-changed={changed || undefined}>
       <span>{props.label}</span>
       <output>{props.value}</output>
       <input
@@ -38,6 +40,18 @@ function Slider(props: { label: string; value: number; min: number; max: number;
         onChange={(e) => props.onChange(e.target.valueAsNumber)}
         onPointerUp={(e) => e.currentTarget.blur()} // hand the arrow keys back to navigation
       />
+      {/* After the input in DOM order, so the label still controls the slider; placed beside the value by the grid. */}
+      <button
+        className={styles.reset}
+        disabled={!changed}
+        title={`重置${props.label}`}
+        onClick={(e) => {
+          e.preventDefault();
+          reset();
+        }}
+      >
+        <RotateCcw size={12} />
+      </button>
     </label>
   );
 }
@@ -55,14 +69,11 @@ export function EditPanel() {
       title="编辑"
       footer={
         <>
-          <button onClick={editActions.reset} data-tip={keys("重置全部编辑  Ctrl R")} data-tip-align="start">
-            <RotateCcw size={13} /> 重置
-          </button>
-          <button onClick={editActions.copyImage} data-tip={keys("复制图像  Ctrl C")}>
+          <button onClick={editActions.copyImage} data-tip={keys("复制图像  Ctrl C")} data-tip-align="start">
             <ClipboardCopy size={13} /> 复制
           </button>
           <button onClick={editActions.export} data-tip={keys("另存为新文件  Ctrl S")} data-tip-align="end">
-            <Save size={13} /> 导出
+            <Save size={13} /> 另存为
           </button>
         </>
       }
@@ -90,7 +101,7 @@ export function EditPanel() {
         </button>
       </div>
 
-      <h4>导出</h4>
+      <h4>另存为</h4>
       <div className={styles.section}>
         <div className={styles.chips}>
           {(Object.keys(EXPORT_FORMATS) as ExportFormat[]).map((format) => (
@@ -119,7 +130,7 @@ export function EditPanel() {
             onChange={(e) => setExportOptions({ maxEdge: e.target.valueAsNumber > 0 ? Math.round(e.target.valueAsNumber) : null })}
           />
         </label>
-        <p className={shell.note}>导出为新文件，不会覆盖原图；PDF / AI 按 300 dpi 栅格化。</p>
+        <p className={shell.note}>另存为新文件，不会覆盖原图；PDF / AI 按 300 dpi 栅格化。</p>
       </div>
     </Panel>
   );
