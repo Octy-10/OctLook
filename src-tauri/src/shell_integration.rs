@@ -62,6 +62,9 @@ fn register(exe: &Path) -> Result<()> {
         let class = classes.create(&progid)?;
         class.set_string("", format!("{} 文件（.{ext}）", family.label()))?;
         class.create("DefaultIcon")?.set_string("", &icon)?;
+        // No app-icon stamp on thumbnails of files OctLook opens: they carry
+        // the format badge instead (see octlook-shell's `overlay`).
+        class.set_string("TypeOverlay", "")?;
         class.create(r"shell\open\command")?.set_string("", &open)?;
 
         classes.create(format!(r".{ext}\OpenWithProgids"))?.set_string(&progid, "")?;

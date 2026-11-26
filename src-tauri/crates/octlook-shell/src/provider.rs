@@ -22,7 +22,7 @@ use windows::{
 };
 use windows_core::implement;
 
-use crate::{badge, bitmap, stream::StreamReader};
+use crate::{badge, bitmap, overlay, stream::StreamReader};
 
 #[implement(IClassFactory)]
 pub struct Factory;
@@ -74,7 +74,9 @@ impl IThumbnailProvider_Impl for ThumbnailProvider_Impl {
         // A panic must never unwind into Explorer's surrogate process.
         let render = || {
             let mut image = stream::thumbnail(&mut StreamReader(stream), &ext, cx)?;
-            badge::apply(&mut image, &ext);
+            if !overlay::shown(&ext) {
+                badge::apply(&mut image, &ext);
+            }
             Ok::<_, octlook_core::Error>(image)
         };
         let image = catch_unwind(AssertUnwindSafe(render))

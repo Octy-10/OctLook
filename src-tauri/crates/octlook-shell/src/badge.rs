@@ -1,6 +1,7 @@
 //! Format badge in the thumbnail's bottom-right corner, so a PSD can be
 //! told apart from a flattened PNG at a glance. Generic labels in family
 //! colours: vendor logos are trademarks and are never embedded.
+//! Skipped where Explorer stamps the default app's icon there (see `overlay`).
 
 use image::{Rgba, RgbaImage};
 use octlook_core::format::{self, Format};

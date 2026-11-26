@@ -10,6 +10,7 @@ mod container;
 mod embedded;
 #[cfg(target_os = "macos")]
 mod imageio;
+mod pdf_art;
 mod psd;
 pub(crate) mod raster;
 pub mod stream;
@@ -115,7 +116,13 @@ pub fn decode(path: &Path, purpose: Purpose) -> Result<Decoded> {
         Format::Svg => Decoded::new(format, Payload::Native, Source::Full),
         Format::Pdf => Decoded::new(format, Payload::Pdf(pdf_bytes(purpose, || std::fs::read(path))?), Source::Full),
         Format::Ai { pdf: true } if purpose == Purpose::View => {
-            Decoded::new(format, Payload::Pdf(std::fs::read(path)?), Source::Full)
+            let buf = std::fs::read(path)?;
+            // An AI whose PDF part draws nothing (artwork kept only in Illustrator's
+            // private data) would render blank: show its embedded preview instead.
+            match pdf_art::is_blank(&buf).then(|| embedded::xmp_thumbnail(&buf)).flatten() {
+                Some(x) => Decoded::new(format, x.into(), Source::Preview),
+                None => Decoded::new(format, Payload::Pdf(buf), Source::Full),
+            }
         }
         // Streamed: large Krita/XD documents are never read whole.
         Format::ZipPreview(_) => preview(format, container::zip_preview(BufReader::new(File::open(path)?))?, ZIP_PREVIEW)?,

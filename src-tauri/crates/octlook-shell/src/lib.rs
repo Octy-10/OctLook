@@ -5,6 +5,7 @@
 #![cfg(windows)]
 
 mod badge;
+mod overlay;
 mod bitmap;
 mod provider;
 mod registry;

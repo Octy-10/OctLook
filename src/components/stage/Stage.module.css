@@ -72,10 +72,10 @@
 
 /* Backdrops */
 .dark {
-  background: var(--bg);
+  background: var(--canvas-dark);
 }
 .light {
-  background: #f7f7f8;
+  background: var(--canvas-light);
 }
 .checker {
   background-color: var(--checker-a);
