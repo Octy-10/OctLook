@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import {
   ClipboardCopy,
   Copy,
-  FlipHorizontal2,
+  CaretsToAxisDashedVertical,
   FolderSearch,
   Info,
   Maximize,
@@ -76,7 +76,7 @@ export function ContextMenu({ at, onClose }: { at: Point; onClose(): void }) {
       <div className={styles.separator} />
       <Item icon={<RotateCw {...ICON} />} label="向右旋转" shortcut="R" keepOpen onSelect={() => viewActions.rotate(1)} />
       <Item icon={<RotateCcw {...ICON} />} label="向左旋转" shortcut="Shift R" keepOpen onSelect={() => viewActions.rotate(-1)} />
-      <Item icon={<FlipHorizontal2 {...ICON} />} label="水平翻转" shortcut="H" keepOpen onSelect={viewActions.flipX} />
+      <Item icon={<CaretsToAxisDashedVertical {...ICON} />} label="水平翻转" shortcut="H" keepOpen onSelect={viewActions.flipX} />
       <Item icon={<Scan {...ICON} />} label="适应窗口" shortcut="0" onSelect={viewActions.fit} />
       <Item icon={<Maximize {...ICON} />} label="实际大小" shortcut="1" onSelect={viewActions.actualSize} />
       <div className={styles.separator} />

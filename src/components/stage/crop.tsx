@@ -1,5 +1,5 @@
 import { useRef, useState, type CSSProperties, type PointerEvent, type RefObject } from "react";
-import { Check, FlipHorizontal2, FlipVertical2, RotateCcw, RotateCw, X } from "lucide-react";
+import { CaretsToAxisDashedHorizontal, CaretsToAxisDashedVertical, Check, RotateCcw, RotateCw, X } from "lucide-react";
 
 import { centreOffset, type StageContent } from "../../hooks/useViewport";
 import { editActions, viewActions } from "../../lib/actions";
@@ -131,8 +131,9 @@ const sameRatio = (a: number | null, b: number | null) => a === b || (a !== null
 const TRANSFORMS = [
   ["向左旋转  Shift R", RotateCcw, () => viewActions.rotate(-1)],
   ["向右旋转  R", RotateCw, () => viewActions.rotate(1)],
-  ["水平翻转  H", FlipHorizontal2, viewActions.flipX],
-  ["垂直翻转  V", FlipVertical2, viewActions.flipY],
+  // Named by the mirror axis: a vertical axis mirrors left ↔ right.
+  ["水平翻转  H", CaretsToAxisDashedVertical, viewActions.flipX],
+  ["垂直翻转  V", CaretsToAxisDashedHorizontal, viewActions.flipY],
 ] as const;
 
 /** Crop tool controls: rotate / flip, aspect presets, live size, cancel / apply. */

@@ -11,6 +11,13 @@ export function UpdateNotice() {
       {state.phase === "available" && (
         <>
           <p className={styles.title}>新版本 {state.version} 可用</p>
+          {state.changes.length > 0 && (
+            <ul className={styles.changes}>
+              {state.changes.map((change) => (
+                <li key={change}>{change}</li>
+              ))}
+            </ul>
+          )}
           <p className={styles.hint}>安装时需要管理员确认，完成后自动重启</p>
           <div className={styles.actions}>
             <button className={styles.ghost} onClick={dismiss}>

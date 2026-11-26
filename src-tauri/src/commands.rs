@@ -157,3 +157,9 @@ pub fn open_in_main(app: tauri::AppHandle, path: PathBuf) {
     crate::spacebar::close();
     crate::resident::show_main(&app, Some(path));
 }
+
+#[cfg(windows)]
+#[tauri::command]
+pub fn quicklook_pin(app: tauri::AppHandle, path: PathBuf) -> Result<()> {
+    crate::spacebar::pin(&app, &path)
+}

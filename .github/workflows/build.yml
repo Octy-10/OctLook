@@ -55,6 +55,19 @@ jobs:
             exit 1
           fi
 
+      # The release's section of CHANGELOG.md heads the release page; the app's
+      # update notice shows the same list (it reads "本次更新" from the notes).
+      - name: Release notes from CHANGELOG.md
+        if: env.RELEASE == 'true'
+        shell: bash
+        run: |
+          notes=$(awk -v head="## ${GITHUB_REF_NAME#v}" '{ sub(/\r$/, "") } $0 == head { on = 1; next } /^## / { on = 0 } on' CHANGELOG.md)
+          if [ -z "$(printf '%s' "$notes" | tr -d '[:space:]')" ]; then
+            echo "::error::CHANGELOG.md has no section for ${GITHUB_REF_NAME#v}"
+            exit 1
+          fi
+          { echo "NOTES<<__CHANGELOG__"; printf '%s\n' "$notes"; echo "__CHANGELOG__"; } >> "$GITHUB_ENV"
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -110,6 +123,10 @@ jobs:
           tagName: ${{ env.RELEASE == 'true' && github.ref_name || '' }}
           releaseName: OctLook ${{ github.ref_name }}
           releaseBody: |
+            ## ✨ 本次更新
+
+            ${{ env.NOTES }}
+
             ## 📥 下载哪个文件？
 
             在下方 **Assets** 里，按你的电脑选**一个**文件下载即可：

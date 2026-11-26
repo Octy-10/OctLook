@@ -108,6 +108,8 @@ export const api = {
   quicklookPresent: (width: number, height: number) => invoke<void>("quicklook_present", { width, height }),
   quicklookClose: () => invoke<void>("quicklook_close"),
   openInMain: (path: string) => invoke<void>("open_in_main", { path }),
+  /** Hands the Space preview's file to a window of its own that stays until closed. */
+  quicklookPin: (path: string) => invoke<void>("quicklook_pin", { path }),
   /** Text in the canvas, recognised offline (PP-OCRv5). Body layout `[RGBA pixels][u32 LE width]`. */
   recognizeText(canvas: HTMLCanvasElement) {
     const { width, height } = canvas;

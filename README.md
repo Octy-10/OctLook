@@ -79,7 +79,8 @@
 
 - 预览窗按文件原始尺寸显示，超过屏幕时等比缩小到工作区约 80%，居中于资源管理器所在的显示器；音频、文本、字体使用固定的默认尺寸。
 - 预览窗不抢焦点：方向键、鼠标在资源管理器里切换选中项时，预览自动跟随；再按空格、Esc 或点预览窗的关闭按钮才会关闭，切换到其他程序时预览保留。
-- 预览窗标题栏可「用默认软件打开」或「在 OctLook 中打开」完整窗口。
+- 预览窗标题栏可「钉住」「用默认软件打开」或「在 OctLook 中打开」完整窗口。
+- 钉住：当前文件移到一个独立窗口（位置不变），不再跟随资源管理器，一直保留到点关闭或在其中按 Esc；再按空格会打开新的预览，可钉住多个文件并排对比。钉住的窗口出现在任务栏中。
 - 只在文件列表获得焦点时响应：重命名、地址栏、搜索框中的空格不受影响；按住 Ctrl / Alt / Shift / Win 时也不触发。文件夹和不支持的格式不处理。
 - 依赖 OctLook 在后台常驻：开启空格预览后，关闭主窗口只是隐藏到系统托盘（托盘菜单可打开主窗口或退出）。首次运行默认开启空格预览与开机自启（开机时在后台启动，不弹窗口），两者都可在设置菜单中关闭；关闭空格预览会一并关闭开机自启。安装后需先手动打开一次 OctLook。
 - 实现方式为低级键盘钩子（`WH_KEYBOARD_LL`）：只检查空格与 Esc，不记录任何按键；少数安全软件可能对此给出提示。选中文件通过 Shell 自动化接口（`IShellWindows` / `IFolderView2`）读取，支持 Windows 11 多标签页。
@@ -138,9 +139,10 @@ $env:TAURI_SIGNING_PRIVATE_KEY = Get-Content "$env:USERPROFILE\.tauri\octlook-up
 ## 发布与自动更新
 
 1. 修改 `src-tauri/tauri.conf.json`、`package.json` 与各 `Cargo.toml` 中的 `version`。
-2. 提交后推送同名标签，例如 `git tag v0.2.0 && git push origin v0.2.0`。
-3. GitHub Actions（`.github/workflows/build.yml`）运行测试，构建并签名 Windows 安装包与 macOS（Apple 芯片 / Intel）`.dmg`，发布 Release 与 `latest.json`。推送到 `main` 时只构建，安装包作为 Actions 产物下载。
-4. 已安装的 OctLook 启动时检查一次（也可在设置菜单手动检查），用户点击「更新并重启」后安装；更新包签名不符会被拒绝。
+2. 在 `CHANGELOG.md` 顶部新增 `## 版本号` 一段，逐条写本次更新内容（缺少该段时 CI 会拒绝发布）。它会显示在 Release 页面顶部，也会出现在软件内的更新提示里。
+3. 提交后推送同名标签，例如 `git tag v0.2.0 && git push origin v0.2.0`。
+4. GitHub Actions（`.github/workflows/build.yml`）运行测试，构建并签名 Windows 安装包与 macOS（Apple 芯片 / Intel）`.dmg`，发布 Release 与 `latest.json`。推送到 `main` 时只构建，安装包作为 Actions 产物下载。
+5. 已安装的 OctLook 启动时检查一次（也可在设置菜单手动检查），提示中列出本次更新内容，用户点击「更新并重启」后安装；更新包签名不符会被拒绝。
 
 仓库需配置 Secret `TAURI_SIGNING_PRIVATE_KEY`（私钥文件全文）。私钥丢失将无法再向现有用户推送更新。
 

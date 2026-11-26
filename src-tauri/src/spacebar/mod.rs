@@ -2,9 +2,13 @@
 //! opens the selected file in a borderless window that never takes focus, so
 //! the arrow keys keep moving through Explorer and the preview follows. Space
 //! or Esc (or its close button) closes it again; switching apps leaves it open.
+//! A pinned preview becomes a window of its own (see `pin`).
 
 mod explorer;
 mod hook;
+mod pin;
+
+pub use pin::{pin, reveal_pinned};
 
 use std::{
     path::PathBuf,
@@ -18,7 +22,7 @@ use std::{
 };
 
 use octlook_core::format;
-use tauri::{window::Color, AppHandle, Emitter, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
+use tauri::{window::Color, AppHandle, Emitter, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, Wry};
 use windows::Win32::{
     Foundation::{HWND, RECT},
     Graphics::Gdi::{GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST},
@@ -70,17 +74,7 @@ pub fn set_enabled(app: &AppHandle, on: bool) -> Result<()> {
     }
     if app.get_webview_window(LABEL).is_none() {
         // Created up front, hidden, so a preview opens without the webview's start-up delay.
-        WebviewWindowBuilder::new(app, LABEL, WebviewUrl::default())
-            .title("OctLook 空格预览")
-            .inner_size(960.0, 640.0)
-            .min_inner_size(MIN_SIZE.0, MIN_SIZE.1)
-            .decorations(false)
-            .visible(false)
-            .focused(false)
-            .skip_taskbar(true)
-            .always_on_top(true)
-            .background_color(Color(11, 11, 13, 255))
-            .build()?;
+        window(app, LABEL, "OctLook 空格预览").inner_size(960.0, 640.0).skip_taskbar(true).always_on_top(true).build()?;
     }
     WORKER.get_or_init(|| {
         let (tx, rx) = mpsc::channel();
@@ -90,6 +84,17 @@ pub fn set_enabled(app: &AppHandle, on: bool) -> Result<()> {
         tx
     });
     Ok(())
+}
+
+/// A borderless preview window (the page draws its own title bar), created hidden.
+fn window<'a>(app: &'a AppHandle, label: &str, title: &str) -> WebviewWindowBuilder<'a, Wry, AppHandle> {
+    WebviewWindowBuilder::new(app, label, WebviewUrl::default())
+        .title(title)
+        .min_inner_size(MIN_SIZE.0, MIN_SIZE.1)
+        .decorations(false)
+        .visible(false)
+        .focused(false)
+        .background_color(Color(11, 11, 13, 255))
 }
 
 fn send(msg: Msg) {

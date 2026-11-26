@@ -13,6 +13,6 @@ document.documentElement.dataset.platform = isMac ? "mac" : "windows";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {getCurrentWindow().label === "quicklook" ? <PreviewApp /> : <App />}
+    {getCurrentWindow().label.startsWith("quicklook") ? <PreviewApp /> : <App />}
   </StrictMode>,
 );

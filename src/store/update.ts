@@ -8,7 +8,7 @@ import { toast } from "./toast";
 export type UpdatePhase =
   | { phase: "idle" }
   | { phase: "checking" }
-  | { phase: "available"; version: string }
+  | { phase: "available"; version: string; changes: string[] }
   | { phase: "installing"; progress: number | null }
   | { phase: "failed"; message: string };
 
@@ -18,6 +18,18 @@ interface UpdateState {
   check(manual: boolean): Promise<void>;
   install(): Promise<void>;
   dismiss(): void;
+}
+
+/**
+ * What the release changed: the list under "本次更新" in its notes (taken from
+ * CHANGELOG.md by CI). The rest of the notes is the download guide of the release page.
+ */
+export function releaseChanges(notes: string | undefined): string[] {
+  const section = notes?.split(/^## /m).find((part) => part.includes("本次更新"));
+  return (section ?? "")
+    .split(/\r?\n/)
+    .filter((line) => line.startsWith("- "))
+    .map((line) => line.slice(2).replace(/\*\*|`/g, "").trim());
 }
 
 /** The release found by the last check; installed only on the user's click. Signatures are verified by the plugin. */
@@ -32,7 +44,7 @@ export const useUpdate = create<UpdateState>((set, get) => ({
     set({ state: { phase: "checking" } });
     try {
       pending = await check();
-      set({ state: pending ? { phase: "available", version: pending.version } : { phase: "idle" } });
+      set({ state: pending ? { phase: "available", version: pending.version, changes: releaseChanges(pending.body) } : { phase: "idle" } });
       if (!pending && manual) toast("已是最新版本");
     } catch (e) {
       set({ state: { phase: "idle" } });
