@@ -6,7 +6,7 @@ import { Logo } from "./components/Logo";
 import { SourceStage } from "./components/viewers/SourceStage";
 import { useTheme } from "./hooks/useAppBindings";
 import { useDefaultApp } from "./hooks/useDefaultApp";
-import { closePreview, pinnedPath, usePreviewWindow } from "./hooks/usePreviewWindow";
+import { closePreview, usePinned, usePreviewWindow } from "./hooks/usePreviewWindow";
 import { useSource } from "./hooks/useSource";
 import { api } from "./lib/ipc";
 import { useCurrentEntry } from "./store/library";
@@ -20,6 +20,7 @@ export function PreviewApp() {
   usePreviewWindow(state, header);
   const entry = useCurrentEntry();
   const app = useDefaultApp(entry?.path ?? null);
+  const pinned = usePinned((s) => s.pinned);
   if (!entry) return null;
 
   return (
@@ -39,7 +40,7 @@ export function PreviewApp() {
               aria-label={`用 ${app.name} 打开`}
               data-tip={`用 ${app.name} 打开`}
               data-tip-side="bottom"
-              onClick={() => void api.openWithDefault(entry.path).then(() => !pinnedPath && closePreview())}
+              onClick={() => void api.openWithDefault(entry.path).then(() => !pinned && closePreview())}
             >
               {app.icon ? (
                 <img className={bar.appIcon} src={app.icon} alt="" draggable={false} />
@@ -48,13 +49,13 @@ export function PreviewApp() {
               )}
             </button>
           )}
-          {!pinnedPath && (
+          {!pinned && (
             <button
               aria-label="钉住"
               data-tip="钉住：留在屏幕上，空格继续预览其他文件"
               data-tip-side="bottom"
               data-tip-align="end"
-              onClick={() => void api.quicklookPin(entry.path)}
+              onClick={() => void api.quicklookPin()}
             >
               <Pin size={15} strokeWidth={1.75} />
             </button>

@@ -1,58 +1,26 @@
-//! Pinned previews: the open preview handed over to a window of its own, which
-//! stays (no longer following Explorer) until closed, so the next Space opens a
-//! fresh preview beside it. Several files can be compared this way.
+//! Pinned previews: the open preview stays where it is, with its file, as a
+//! window of its own (no longer topmost, no longer following Explorer) until
+//! closed, and a fresh preview is made ready for the next Space. Several files
+//! can be compared this way.
 
-use std::{
-    path::Path,
-    sync::{
-        atomic::{AtomicU32, Ordering},
-        Mutex,
-    },
-};
+use std::{path::Path, sync::atomic::Ordering};
 
-use tauri::{AppHandle, Manager};
-use windows::Win32::{
-    Foundation::RECT,
-    UI::WindowsAndMessaging::{GetWindowRect, SetWindowPos, HWND_TOP, SWP_NOACTIVATE, SWP_SHOWWINDOW},
-};
+use tauri::{AppHandle, Emitter};
+use windows::Win32::UI::WindowsAndMessaging::{SetWindowPos, HWND_NOTOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE};
 
-use super::{close, window, LABEL};
+use super::{create, preview, CURRENT};
 use crate::error::Result;
 
-/// Pinned windows are labelled `quicklook-pin-<n>`; the page reads the prefix too.
-const PREFIX: &str = "quicklook-pin-";
-static COUNT: AtomicU32 = AtomicU32::new(0);
-/// Where each new pinned window goes once its page has loaded: the preview's own place.
-static PLACES: Mutex<Vec<(String, RECT)>> = Mutex::new(Vec::new());
-
-/// Pins the file shown in the preview: a new window takes the preview's place, then the preview closes.
-pub fn pin(app: &AppHandle, path: &Path) -> Result<()> {
-    let Some(preview) = app.get_webview_window(LABEL) else { return Ok(()) };
-    let mut place = RECT::default();
-    // SAFETY: reads our own window's rectangle into a local.
-    unsafe { GetWindowRect(preview.hwnd()?, &mut place) }.map_err(std::io::Error::other)?;
-    let label = format!("{PREFIX}{}", COUNT.fetch_add(1, Ordering::Relaxed));
-    let name = path.file_name().map_or_else(|| path.to_string_lossy(), |n| n.to_string_lossy());
-    // The page has no event to wait for: it finds its file in a global set before it runs.
-    let script = format!("window.__OCTLOOK_PIN__ = {};", serde_json::Value::from(path.to_string_lossy()));
-    window(app, &label, &name).initialization_script(&script).build()?;
-    PLACES.lock().unwrap_or_else(|e| e.into_inner()).push((label, place));
-    close();
-    Ok(())
-}
-
-/// Shows a pinned window once its page has loaded, where the preview was and
-/// without taking focus from Explorer. False for every other window.
-pub fn reveal_pinned(app: &AppHandle, label: &str) -> bool {
-    if !label.starts_with(PREFIX) {
-        return false;
-    }
-    let mut places = PLACES.lock().unwrap_or_else(|e| e.into_inner());
-    let Some(i) = places.iter().position(|(l, _)| l == label) else { return true }; // a reload: already placed
-    let (_, RECT { left, top, right, bottom }) = places.swap_remove(i);
-    if let Some(Ok(hwnd)) = app.get_webview_window(label).map(|w| w.hwnd()) {
-        // SAFETY: positions and shows our own window.
-        let _ = unsafe { SetWindowPos(hwnd, Some(HWND_TOP), left, top, right - left, bottom - top, SWP_NOACTIVATE | SWP_SHOWWINDOW) };
-    }
-    true
+pub fn detach(app: &AppHandle, path: &Path) -> Result<()> {
+    let Some(window) = preview(app) else { return Ok(()) };
+    // From here on the worker talks to the next preview, never to this window.
+    CURRENT.fetch_add(1, Ordering::Relaxed);
+    // Made topmost through Win32 (see `present`), so released the same way.
+    // SAFETY: changes only the z-order band of our own window.
+    unsafe { SetWindowPos(window.hwnd()?, Some(HWND_NOTOPMOST), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE) }
+        .map_err(std::io::Error::other)?;
+    window.set_skip_taskbar(false)?;
+    window.set_title(&path.file_name().map_or_else(|| path.to_string_lossy(), |n| n.to_string_lossy()))?;
+    window.emit_to(window.label(), "quicklook:pinned", ())?;
+    create(app)
 }

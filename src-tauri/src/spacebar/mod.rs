@@ -2,18 +2,16 @@
 //! opens the selected file in a borderless window that never takes focus, so
 //! the arrow keys keep moving through Explorer and the preview follows. Space
 //! or Esc (or its close button) closes it again; switching apps leaves it open.
-//! A pinned preview becomes a window of its own (see `pin`).
+//! A pinned preview stays where it is, as a window of its own (see `pin`).
 
 mod explorer;
 mod hook;
 mod pin;
 
-pub use pin::{pin, reveal_pinned};
-
 use std::{
     path::PathBuf,
     sync::{
-        atomic::{AtomicBool, AtomicIsize, Ordering},
+        atomic::{AtomicBool, AtomicIsize, AtomicU32, Ordering},
         mpsc::{self, Receiver, RecvTimeoutError, Sender},
         OnceLock,
     },
@@ -22,7 +20,7 @@ use std::{
 };
 
 use octlook_core::format;
-use tauri::{window::Color, AppHandle, Emitter, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, Wry};
+use tauri::{window::Color, AppHandle, Emitter, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 use windows::Win32::{
     Foundation::{HWND, RECT},
     Graphics::Gdi::{GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST},
@@ -37,7 +35,10 @@ use windows::Win32::{
 
 use crate::{com::Com, error::Result};
 
-pub const LABEL: &str = "quicklook";
+/// Preview windows are labelled `quicklook-<n>`. Pinning keeps a window and its
+/// label; the next number becomes the Space preview.
+const PREFIX: &str = "quicklook-";
+const OPEN: &str = "quicklook:open";
 /// How often the open preview checks Explorer's selection (arrow keys, clicks).
 const FOLLOW: Duration = Duration::from_millis(150);
 /// The preview never grows past this share of the monitor's work area.
@@ -46,6 +47,8 @@ const MAX_SHARE: f64 = 0.8;
 const MIN_SIZE: (f64, f64) = (360.0, 240.0);
 
 static ENABLED: AtomicBool = AtomicBool::new(false);
+/// The number of the current Space preview window.
+static CURRENT: AtomicU32 = AtomicU32::new(0);
 static VISIBLE: AtomicBool = AtomicBool::new(false);
 /// The Explorer (or desktop) window the preview belongs to.
 static ANCHOR: AtomicIsize = AtomicIsize::new(0);
@@ -55,6 +58,10 @@ enum Msg {
     /// Space in a file list: preview its selection, or close the open preview.
     Toggle(isize),
     Close,
+    /// The open preview becomes a pinned window.
+    Pin,
+    /// The preview page listens now: send it the open file, in case it loaded too late to hear.
+    Ready,
 }
 
 pub fn enabled() -> bool {
@@ -67,14 +74,13 @@ pub fn set_enabled(app: &AppHandle, on: bool) -> Result<()> {
     if !on {
         close();
         // The hidden preview would otherwise keep the app alive after the main window closes.
-        if let Some(window) = app.get_webview_window(LABEL) {
+        if let Some(window) = preview(app) {
             window.destroy()?;
         }
         return Ok(());
     }
-    if app.get_webview_window(LABEL).is_none() {
-        // Created up front, hidden, so a preview opens without the webview's start-up delay.
-        window(app, LABEL, "OctLook 空格预览").inner_size(960.0, 640.0).skip_taskbar(true).always_on_top(true).build()?;
+    if preview(app).is_none() {
+        create(app)?;
     }
     WORKER.get_or_init(|| {
         let (tx, rx) = mpsc::channel();
@@ -86,15 +92,29 @@ pub fn set_enabled(app: &AppHandle, on: bool) -> Result<()> {
     Ok(())
 }
 
-/// A borderless preview window (the page draws its own title bar), created hidden.
-fn window<'a>(app: &'a AppHandle, label: &str, title: &str) -> WebviewWindowBuilder<'a, Wry, AppHandle> {
-    WebviewWindowBuilder::new(app, label, WebviewUrl::default())
-        .title(title)
+fn label() -> String {
+    format!("{PREFIX}{}", CURRENT.load(Ordering::Relaxed))
+}
+
+fn preview(app: &AppHandle) -> Option<WebviewWindow> {
+    app.get_webview_window(&label())
+}
+
+/// The Space preview: borderless (the page draws its own title bar), created
+/// hidden and up front, so a preview opens without the webview's start-up delay.
+fn create(app: &AppHandle) -> Result<()> {
+    WebviewWindowBuilder::new(app, label(), WebviewUrl::default())
+        .title("OctLook 空格预览")
+        .inner_size(960.0, 640.0)
         .min_inner_size(MIN_SIZE.0, MIN_SIZE.1)
         .decorations(false)
         .visible(false)
         .focused(false)
+        .skip_taskbar(true)
+        .always_on_top(true)
         .background_color(Color(11, 11, 13, 255))
+        .build()?;
+    Ok(())
 }
 
 fn send(msg: Msg) {
@@ -107,11 +127,19 @@ pub fn close() {
     send(Msg::Close);
 }
 
+pub fn pin() {
+    send(Msg::Pin);
+}
+
+pub fn ready() {
+    send(Msg::Ready);
+}
+
 /// Sizes the preview to `width` × `height` logical px (the file's own size,
 /// scaled down to fit the anchor's monitor) and shows it without activating it.
 pub fn present(window: &WebviewWindow, width: f64, height: f64) -> Result<()> {
-    if !VISIBLE.load(Ordering::Relaxed) {
-        return Ok(()); // closed while the file was loading
+    if !VISIBLE.load(Ordering::Relaxed) || window.label() != label() {
+        return Ok(()); // closed (or pinned) while the file was loading
     }
     let hwnd = window.hwnd()?;
     let anchor = HWND(ANCHOR.load(Ordering::Relaxed) as _);
@@ -179,6 +207,19 @@ fn worker(app: AppHandle, rx: Receiver<Msg>) {
         };
         let anchor = HWND(ANCHOR.load(Ordering::Relaxed) as _);
         match msg {
+            Some(Msg::Ready) => {
+                if let Some(path) = &shown {
+                    let _ = app.emit_to(label(), OPEN, path);
+                }
+            }
+            Some(Msg::Pin) => {
+                if let Some(path) = shown.take() {
+                    VISIBLE.store(false, Ordering::Relaxed);
+                    if let Err(e) = pin::detach(&app, &path) {
+                        eprintln!("pin failed: {e}");
+                    }
+                }
+            }
             Some(_) if shown.is_some() => hide(&app, &mut shown, anchor),
             Some(Msg::Toggle(hwnd)) => {
                 if let Some(path) = previewable(explorer::selected(HWND(hwnd as _))) {
@@ -208,14 +249,14 @@ fn previewable(path: Option<PathBuf>) -> Option<PathBuf> {
 fn show(app: &AppHandle, shown: &mut Option<PathBuf>, path: PathBuf) {
     VISIBLE.store(true, Ordering::Relaxed);
     // The page loads the file, then calls `present` with its natural size.
-    let _ = app.emit_to(LABEL, "quicklook:open", &path);
+    let _ = app.emit_to(label(), OPEN, &path);
     *shown = Some(path);
 }
 
 fn hide(app: &AppHandle, shown: &mut Option<PathBuf>, anchor: HWND) {
     VISIBLE.store(false, Ordering::Relaxed);
     *shown = None;
-    let Some(Ok(hwnd)) = app.get_webview_window(LABEL).map(|w| w.hwnd()) else { return };
+    let Some(Ok(hwnd)) = preview(app).map(|w| w.hwnd()) else { return };
     // SAFETY: plain window calls; a stale anchor handle just fails.
     unsafe {
         let focused = GetForegroundWindow() == hwnd;
@@ -227,7 +268,7 @@ fn hide(app: &AppHandle, shown: &mut Option<PathBuf>, anchor: HWND) {
             let _ = SetForegroundWindow(anchor);
         }
     }
-    let _ = app.emit_to(LABEL, "quicklook:close", ());
+    let _ = app.emit_to(label(), "quicklook:close", ());
 }
 
 #[cfg(test)]

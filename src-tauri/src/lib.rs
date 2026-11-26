@@ -67,19 +67,21 @@ pub fn run() {
             commands::open_in_main,
             #[cfg(windows)]
             commands::quicklook_pin,
+            #[cfg(windows)]
+            commands::quicklook_ready,
         ])
         .on_window_event(|_window, _event| {
             #[cfg(windows)]
             resident::on_window_event(_window, _event);
         })
         // Windows start hidden so users never see an unstyled flash. The main window
-        // stays hidden after a background start; the Space preview shows itself when asked.
+        // stays hidden after a background start; preview windows show themselves once their file loads.
         .on_page_load(|webview, payload| {
             if payload.event() != PageLoadEvent::Finished {
                 return;
             }
             #[cfg(windows)]
-            if spacebar::reveal_pinned(webview.app_handle(), webview.label()) || resident::launched_in_background() {
+            if resident::launched_in_background() {
                 return;
             }
             if webview.label() == "main" {
