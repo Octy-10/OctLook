@@ -110,10 +110,45 @@ jobs:
           tagName: ${{ env.RELEASE == 'true' && github.ref_name || '' }}
           releaseName: OctLook ${{ github.ref_name }}
           releaseBody: |
-            安装包见下方 Assets；已安装的 OctLook 会自动提示更新。
-            - Windows：OctLook_*_x64-setup.exe
-            - macOS（Apple 芯片）：OctLook_*_aarch64.dmg；macOS（Intel）：OctLook_*_x64.dmg
-            macOS 版未经 Apple 公证，首次打开请在「系统设置 → 隐私与安全性」中点「仍要打开」。
+            ## 📥 下载哪个文件？
+
+            在下方 **Assets** 里，按你的电脑选**一个**文件下载即可：
+
+            | 你的电脑 | 下载这个文件 |
+            | --- | --- |
+            | **Windows 10 / 11** | 以 `_x64-setup.exe` 结尾的文件 |
+            | **Mac（Apple 芯片：M1 / M2 / M3 / M4…）** | 以 `_aarch64.dmg` 结尾的文件 |
+            | **Mac（Intel 处理器）** | 以 `_x64.dmg` 结尾的文件 |
+
+            > 不知道 Mac 是哪种？点屏幕左上角的苹果图标 →「关于本机」：写着「芯片 Apple M…」选 Apple 芯片，写着「处理器 Intel…」选 Intel。
+            >
+            > `.sig`、`.tar.gz`、`latest.json` 是自动更新用的，**不用下载**。
+
+            ## 🪟 Windows 安装
+
+            1. 双击下载的 `.exe`，按提示点「下一步」完成安装（需要管理员权限）。
+            2. 如果弹出「Windows 已保护你的电脑」：点 **更多信息** → **仍要运行**。
+            3. 安装后在开始菜单打开 OctLook；资源管理器里的 PSD、AI 等文件会直接显示缩略图（可能要重启资源管理器或电脑后生效）。
+            4. 想用 OctLook 默认打开图片：右键图片 →「打开方式」→「选择其他应用」→ 选 OctLook 并勾选「始终使用」。
+
+            ## 🍎 Mac 安装
+
+            1. 双击下载的 `.dmg`，把 **OctLook** 图标拖进 **应用程序（Applications）** 文件夹。
+            2. 第一次打开时，系统可能提示「无法验证开发者」并拦截。请打开 **系统设置 → 隐私与安全性**，在页面下方找到 OctLook，点 **仍要打开**，再输入开机密码确认。
+            3. 如果提示「已损坏，无法打开」：打开「终端」，粘贴下面这行并回车，再重新打开即可：
+               ```
+               xattr -dr com.apple.quarantine /Applications/OctLook.app
+               ```
+
+            > 以上提示是因为 OctLook 是免费开源软件，暂未购买 Apple 和微软的签名证书，并不是病毒。源代码完全公开在本仓库。
+
+            ## 🔄 更新
+
+            已安装的 OctLook 启动时会自动检查新版本，弹出提示后点「更新并重启」即可；也可以在右上角 ⚙ 设置菜单里点「检查更新」。
+
+            ## ❓ 遇到问题
+
+            到 [Issues](https://github.com/${{ github.repository }}/issues) 反馈，附上系统版本和出问题的文件格式，我们会尽快处理。
           releaseDraft: false
           prerelease: false
 
