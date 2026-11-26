@@ -19,7 +19,10 @@
     "dialog:allow-open",
     "dialog:allow-save",
     "opener:allow-reveal-item-in-dir",
-    "opener:allow-open-url",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [{ "url": "ms-settings:defaultapps*" }]
+    },
     "opener:allow-default-urls",
     "updater:default",
     "process:allow-restart"

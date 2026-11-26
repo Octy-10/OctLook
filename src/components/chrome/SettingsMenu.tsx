@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { getVersion } from "@tauri-apps/api/app";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import {
   CircleHelp,
   Copy,
@@ -7,6 +8,7 @@ import {
   FolderOpen,
   FolderSearch,
   ImagePlus,
+  Images,
   Info,
   Maximize,
   Scan,
@@ -70,6 +72,12 @@ function SystemSection() {
         onChange={toggleSpacePreview}
       />
       <Switch label="开机自启" checked={settings.autostart} disabled={!settings.spacePreview} onChange={toggleAutostart} />
+      {/* Windows lets only the user change defaults: open OctLook's page in Settings › Default apps. */}
+      <Item
+        icon={<Images {...ICON} />}
+        label="设为默认看图软件"
+        onSelect={() => openUrl("ms-settings:defaultapps?registeredAppMachine=OctLook")}
+      />
     </>
   );
 }
