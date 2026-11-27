@@ -1,6 +1,6 @@
 [package]
 name = "octlook"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["十月"]
 description = "OctLook — a fast, ad-free file previewer for designers"
 edition = "2021"

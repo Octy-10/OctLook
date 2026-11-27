@@ -1,7 +1,7 @@
 {
   "name": "octlook",
   "private": true,
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "专为设计师打造的极简无广告文件预览工具",
   "license": "GPL-3.0-only",
   "author": "十月",
