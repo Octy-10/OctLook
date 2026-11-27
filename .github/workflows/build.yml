@@ -217,6 +217,10 @@ jobs:
             ## ❓ 遇到问题
 
             到 [Issues](https://github.com/${{ github.repository }}/issues) 反馈，附上系统版本和出问题的文件格式，我们会尽快处理。
+
+            ## ⭐ 支持一下
+
+            如果 OctLook 帮到了你，欢迎到[仓库首页](https://github.com/${{ github.repository }})点个 Star，这是持续更新的最大动力～
           # A draft until every platform is in (see `publish`): installed copies
           # never see a latest.json that lacks their platform.
           releaseDraft: true

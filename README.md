@@ -15,6 +15,8 @@
 
 作者：[十月](https://github.com/Octy-10)
 
+> ⭐ 如果 OctLook 帮到了你，欢迎点个 Star，这是我持续更新的最大动力～
+
 ## 核心亮点
 
 <p align="center"><img src="docs/highlights.svg" alt="核心亮点" width="100%"></p>
@@ -182,6 +184,14 @@ src
 ```
 
 已复用的开源组件：`image`、`resvg`、`fast_image_resize`、`zip`、`kamadak-exif`、`trash`、`lofty`、`chardetng`、`encoding_rs`、`ttf-parser`、pdf.js、highlight.js、marked、DOMPurify、PaddleOCR PP-OCRv5 模型、ONNX Runtime（`ort`）、Ghostscript、`ruzstd`、Windows WIC、macOS ImageIO、lucide 图标、Inter 字体。PSD 解析自研，原因是现有 crate（`psd`、`rawpsd`）不支持 PSB 或 16/32 bit。
+
+## 支持一下
+
+OctLook 免费开源、无广告。如果它帮到了你：
+
+- 点个 [Star](https://github.com/Octy-10/OctLook) ⭐，让更多设计师发现它
+- 遇到问题或有想要的功能，欢迎到 [Issues](https://github.com/Octy-10/OctLook/issues) 反馈
+- 推荐给身边需要看设计稿的朋友
 
 ## 许可证
 
