@@ -103,8 +103,8 @@ impl Decoded {
 }
 
 const AI_NOTE: &str =
-    "保存时未勾选「创建 PDF 兼容文件」，文件中只有这张小预览图。在 Illustrator 中勾选该项后重新保存，即可清晰显示。";
-const CDR_NOTE: &str = "CorelDRAW 的矢量内容是私有格式，暂无法直接渲染，这里显示的是文件内嵌的预览图。";
+    "保存时未勾选「创建 PDF 兼容文件」，文件中只有这张小预览图。在 Illustrator 中勾选该项后重新保存，即可清晰显示";
+const CDR_NOTE: &str = "CorelDRAW 的矢量内容是私有格式，暂无法直接渲染，这里显示的是文件内嵌的预览图";
 
 /// Encoded previews returned to the frontend.
 pub(crate) struct Extracted {

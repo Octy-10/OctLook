@@ -130,7 +130,7 @@ export function EditPanel() {
             onChange={(e) => setExportOptions({ maxEdge: e.target.valueAsNumber > 0 ? Math.round(e.target.valueAsNumber) : null })}
           />
         </label>
-        <p className={shell.note}>另存为新文件，不会覆盖原图；PDF / AI 按 300 dpi 栅格化。</p>
+        <p className={shell.note}>另存为新文件，不会覆盖原图；PDF / AI 按 300 dpi 栅格化</p>
       </div>
     </Panel>
   );

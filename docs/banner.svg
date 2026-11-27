@@ -64,8 +64,8 @@
   <text x="640" y="150" fill="#A1A1A6" font-size="19" font-weight="600" text-anchor="middle" letter-spacing="0.5">OctLook</text>
 
   <!-- Headline -->
-  <text x="640" y="222" fill="url(#headline)" font-size="64" font-weight="700" text-anchor="middle" letter-spacing="-1.5">设计稿，一眼看透。</text>
-  <text x="640" y="270" fill="#86868B" font-size="21" font-weight="500" text-anchor="middle">PSD、AI、CDR、Sketch、RAW 秒开 · 选中按空格即预览 · 开源免费无广告</text>
+  <text x="640" y="222" fill="url(#headline)" font-size="64" font-weight="700" text-anchor="middle" letter-spacing="-1.5">文件预览，秒开</text>
+  <text x="640" y="270" fill="#86868B" font-size="21" font-weight="500" text-anchor="middle">设计稿、图片、视频、文本、字体，一个就够 · 选中按空格即预览 · 开源免费无广告</text>
 
   <!-- Product shot -->
   <g filter="url(#drop)">

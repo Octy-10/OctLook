@@ -51,7 +51,7 @@
   </g>
   <rect x="40.5" y="40.5" width="783" height="319" rx="27.5" fill="none" stroke="url(#edge)"/>
   <text x="80" y="98" fill="#86868B" font-size="17" font-weight="600">设计文件</text>
-  <text x="80" y="140" fill="#F5F5F7" font-size="32" font-weight="700" letter-spacing="-0.5">PSD 原生解析，层层到位。</text>
+  <text x="80" y="140" fill="#F5F5F7" font-size="32" font-weight="700" letter-spacing="-0.5">PSD 原生解析，层层到位</text>
   <text x="80" y="290" fill="url(#violet)" font-size="96" font-weight="800" letter-spacing="-3">16/32 bit</text>
   <text x="82" y="326" fill="#86868B" font-size="16">CMYK · Lab · 索引色 · PSB 超大文档</text>
   <g font-size="14" font-weight="600" fill="#D1D1D6" text-anchor="middle">
@@ -72,7 +72,7 @@
   </g>
   <rect x="840.5" y="40.5" width="399" height="319" rx="27.5" fill="none" stroke="url(#edge)"/>
   <text x="880" y="98" fill="#86868B" font-size="17" font-weight="600">空格预览 · Windows</text>
-  <text x="880" y="140" fill="#F5F5F7" font-size="32" font-weight="700" letter-spacing="-0.5">选中，按空格。</text>
+  <text x="880" y="140" fill="#F5F5F7" font-size="32" font-weight="700" letter-spacing="-0.5">选中，按空格</text>
   <text x="880" y="174" fill="#86868B" font-size="16">资源管理器里即点即看，方向键跟随</text>
   <g filter="url(#lift)">
     <rect x="880" y="206" width="320" height="64" rx="14" fill="url(#key)"/>
@@ -86,7 +86,7 @@
   <rect x="40" y="376" width="389" height="280" rx="28" fill="url(#card)"/>
   <rect x="40.5" y="376.5" width="388" height="279" rx="27.5" fill="none" stroke="url(#edge)"/>
   <text x="76" y="430" fill="#86868B" font-size="17" font-weight="600">系统缩略图 · Windows</text>
-  <text x="76" y="468" fill="#F5F5F7" font-size="26" font-weight="700" letter-spacing="-0.4">文件夹里，直接看稿。</text>
+  <text x="76" y="468" fill="#F5F5F7" font-size="26" font-weight="700" letter-spacing="-0.4">文件夹里，直接看稿</text>
   <g font-size="11" font-weight="700">
     <rect x="76" y="508" width="96" height="96" rx="12" fill="url(#thumbA)"/>
     <rect x="186" y="508" width="96" height="96" rx="12" fill="url(#thumbB)"/>
@@ -104,7 +104,7 @@
   <rect x="445" y="376" width="390" height="280" rx="28" fill="url(#card)"/>
   <rect x="445.5" y="376.5" width="389" height="279" rx="27.5" fill="none" stroke="url(#edge)"/>
   <text x="481" y="430" fill="#86868B" font-size="17" font-weight="600">离线文字识别</text>
-  <text x="481" y="468" fill="#F5F5F7" font-size="26" font-weight="700" letter-spacing="-0.4">图中文字，一键取出。</text>
+  <text x="481" y="468" fill="#F5F5F7" font-size="26" font-weight="700" letter-spacing="-0.4">图中文字，一键取出</text>
   <text x="478" y="568" fill="url(#sunset)" font-size="88" font-weight="800" letter-spacing="-3">0.4s</text>
   <text x="481" y="606" fill="#86868B" font-size="16">PP-OCRv5 · 简繁中英日 · 竖排倾斜</text>
   <text x="481" y="630" fill="#86868B" font-size="16">全程本地运行，不上传任何图片</text>
@@ -113,7 +113,7 @@
   <rect x="851" y="376" width="389" height="280" rx="28" fill="url(#card)"/>
   <rect x="851.5" y="376.5" width="388" height="279" rx="27.5" fill="none" stroke="url(#edge)"/>
   <text x="887" y="430" fill="#86868B" font-size="17" font-weight="600">标注</text>
-  <text x="887" y="468" fill="#F5F5F7" font-size="26" font-weight="700" letter-spacing="-0.4">圈、写、画，一气呵成。</text>
+  <text x="887" y="468" fill="#F5F5F7" font-size="26" font-weight="700" letter-spacing="-0.4">圈、写、画，一气呵成</text>
   <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="4">
     <rect x="1080" y="510" width="120" height="84" stroke="#FFD60A"/>
     <path d="M898 590 C930 540 960 600 990 552 S1040 520 1060 560" stroke="#FF5F8F"/>
@@ -130,7 +130,7 @@
   </g>
   <rect x="40.5" y="672.5" width="591" height="279" rx="27.5" fill="none" stroke="url(#edge)"/>
   <text x="80" y="728" fill="#86868B" font-size="17" font-weight="600">多格式预览</text>
-  <text x="80" y="768" fill="#F5F5F7" font-size="30" font-weight="700" letter-spacing="-0.5">影音、代码、字体，一并预览。</text>
+  <text x="80" y="768" fill="#F5F5F7" font-size="30" font-weight="700" letter-spacing="-0.5">影音、代码、字体，一并预览</text>
   <!-- Video -->
   <rect x="80" y="800" width="104" height="84" rx="12" fill="url(#thumbC)"/>
   <path d="M124 826 v32 l26 -16 z" fill="#FFF" stroke="#FFF" stroke-width="3" stroke-linejoin="round"/>
@@ -159,7 +159,7 @@
   <rect x="648" y="672" width="592" height="280" rx="28" fill="url(#card)"/>
   <rect x="648.5" y="672.5" width="591" height="279" rx="27.5" fill="none" stroke="url(#edge)"/>
   <text x="688" y="728" fill="#86868B" font-size="17" font-weight="600">调色与取色</text>
-  <text x="688" y="768" fill="#F5F5F7" font-size="30" font-weight="700" letter-spacing="-0.5">所见，即所得。</text>
+  <text x="688" y="768" fill="#F5F5F7" font-size="30" font-weight="700" letter-spacing="-0.5">所见，即所得</text>
   <g>
     <circle cx="712" cy="846" r="24" fill="#FF5F57"/>
     <circle cx="772" cy="846" r="24" fill="#FF9F0A"/>

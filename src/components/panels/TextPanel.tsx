@@ -28,7 +28,7 @@ export function TextPanel() {
         </>
       }
     >
-      {result.phase === "idle" && <p className={shell.note}>识别当前画面中的中英文文字，支持竖排与倾斜文字；已裁剪时只识别裁剪区域。全程离线。</p>}
+      {result.phase === "idle" && <p className={shell.note}>识别当前画面中的中英文文字，支持竖排与倾斜文字；已裁剪时只识别裁剪区域。全程离线</p>}
       {result.phase === "running" && (
         <>
           <p className={shell.note}>正在识别…</p>
