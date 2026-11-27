@@ -79,11 +79,6 @@ export const fileActions = {
     if (path) await revealItemInDir(path).catch((e) => toast(errorMessage(e), "error"));
   },
 
-  async openWithDefault() {
-    const path = currentPath();
-    if (path) await api.openWithDefault(path).catch((e) => toast(errorMessage(e), "error"));
-  },
-
   async copyPath() {
     const path = currentPath();
     if (!path) return;
@@ -186,6 +181,13 @@ export const editActions = {
     } catch (e) {
       text.settle(job, { phase: "failed", message: errorMessage(e) });
     }
+  },
+
+  /** Like the other tools: a second press closes the text panel. */
+  toggleExtractText() {
+    const view = useViewState.getState();
+    if (view.panel === "text") view.setPanel(null);
+    else void editActions.extractText();
   },
 };
 

@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/banner.svg" alt="OctLook — 专为设计师打造的极简看图软件" width="100%"></p>
+<p align="center"><img src="docs/banner.svg" alt="OctLook — 专为设计师打造的极简无广告文件预览工具" width="100%"></p>
 
 <p align="center">
   <a href="https://github.com/Octy-10/OctLook/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/Octy-10/OctLook?style=flat-square&color=6E8BFF"></a>
@@ -11,7 +11,7 @@
 
 # OctLook
 
-专为设计师打造的极简看图软件：秒开 PSD、AI、CDR、Sketch 等设计文件，在资源管理器中直接显示缩略图，同时胜任日常看图，也能顺手预览视频、音频、文本代码与字体。Windows 上在资源管理器选中文件按空格即可快速预览。Tauri 2（Rust）+ React 19 + TypeScript，支持 Windows 与 macOS。
+专为设计师打造的极简无广告文件预览工具：PSD、AI、CDR、EPS、Sketch 等设计文件秒开，图片、视频、音频、文本代码与字体也一并预览；资源管理器直接显示设计文件缩略图，选中文件按空格即可快速预览（Windows）。Tauri 2（Rust）+ React 19 + TypeScript，支持 Windows 与 macOS。
 
 作者：[十月](https://github.com/Octy-10)
 
@@ -21,8 +21,8 @@
 
 - **设计文件秒开**：PSD / PSB 由 Rust 自研解析（含 16/32 bit、CMYK、Lab），AI / PDF 矢量渲染放大不糊，CDR、Sketch、XD、Figma、Affinity 等读取内嵌预览，相机 RAW 与 HEIC 也能直接看。
 - **空格预览**（Windows）：在资源管理器或桌面选中文件按空格，弹出按原始比例显示的预览窗，方向键切换文件时预览跟随，再按空格或 Esc 关闭；预览窗不抢焦点。
-- **不止看图**：视频、音频（显示专辑封面）、文本与代码（自动识别 GBK 等编码，语法高亮，Markdown 渲染）、字体（多字号样张）都能直接预览；设计文件、PDF、代码等还能一键用电脑上更专业的软件（如 Photoshop、VS Code）打开。
-- **系统级缩略图**（Windows）：安装后资源管理器直接显示 PSD、AI、SVG、CDR 等文件的缩略图，并带与官方软件配色一致的格式角标，不用再逐个打开确认。
+- **多种格式一站预览**：视频、音频（显示专辑封面）、文本与代码（自动识别 GBK 等编码，语法高亮，Markdown 渲染）、字体（多字号样张）都能直接预览；设计文件、PDF、代码等还能一键用电脑上更专业的软件（如 Photoshop、VS Code）打开。
+- **系统级缩略图**（Windows）：安装后资源管理器直接显示 PSD、AI、EPS、SVG、CDR 等文件的缩略图，并带与官方软件配色一致的格式角标，不用再逐个打开确认。
 - **离线文字识别**：内置 PaddleOCR PP-OCRv5 轻量模型，一键提取简繁中文、英文、日文，竖排与倾斜文字也能识别；全程本地运行，不上传任何图片。
 - **随手标注与裁剪**：文字、箭头、矩形、画笔四种标注，支持撤销 / 重做；裁剪可锁定比例或直接输入像素尺寸。
 - **调色与取色**：曝光、对比度、色温等实时预览，导出与预览逐像素一致；取色器单击复制 HEX，文件信息自动列出主色与印刷尺寸。
@@ -32,12 +32,15 @@
 
 | 格式 | 方式 | 说明 |
 | --- | --- | --- |
-| JPG PNG GIF WebP AVIF BMP ICO SVG | WebView 原生解码 | 零拷贝、支持动图、自动 EXIF 方向 |
-| PSD / PSB | Rust 自研合成图解析 | 1/8/16/32 bit；RGB/CMYK/灰度/索引/Lab；RLE/ZIP；透明通道。需保存时开启「最大兼容」，否则回退内嵌缩略图 |
-| AI（PDF 兼容）/ PDF | pdf.js 矢量渲染 | 放大时按分辨率档位重绘，始终清晰；多页翻页 |
-| AI（旧版）/ EPS / INDD | 内嵌预览 | XMP 缩略图；DOS EPS 的 TIFF 预览 |
-| CDR（7 – 2024） | 内嵌预览 | X4+ ZIP 内的缩略图 / RIFF `DISP` 位图 |
+| JPG PNG GIF WebP AVIF BMP ICO SVG | WebView 原生解码 | 零拷贝、支持动图、自动 EXIF 方向；SVGZ 先解压再按 SVG 显示 |
+| PSD / PSB / PSDT | Rust 自研合成图解析 | 1/8/16/32 bit；RGB/CMYK/灰度/索引/Lab；RLE/ZIP；透明通道。需保存时开启「最大兼容」，否则回退内嵌缩略图 |
+| AI / AIT（PDF 兼容）/ PDF | pdf.js 矢量渲染 | 放大时按分辨率档位重绘，始终清晰；多页翻页 |
+| EPS / PS | Ghostscript 转 PDF 后矢量渲染 | 内置 Ghostscript（AGPL-3.0），无需另装；资源管理器缩略图使用文件内嵌预览 |
+| AI（旧版）/ INDD / INDT | 内嵌预览 | XMP 缩略图 |
+| CDR / CDT（7 – 2024） | 内嵌预览 | X4+ ZIP 内的缩略图 / RIFF `DISP` 位图 |
 | Sketch / XD / Fig / Krita / ORA / Procreate / Affinity | 内嵌预览 | 读取文件内置的扁平化预览图 |
+| Blender（.blend） | 内嵌预览 | 保存时生成的缩略图，支持 zstd / gzip 压缩的文件 |
+| ICNS（macOS 图标） | 内嵌 PNG | 取图标集中最大的一张 |
 | 相机 RAW（CR2 CR3 NEF ARW DNG RAF ORF RW2 …） | 内嵌全尺寸 JPEG | 预览过小时回退系统 RAW 解码器 |
 | TIFF TGA DDS HDR EXR QOI PNM | `image` crate | 浮点图做伽马编码；失败回退系统解码器 |
 | HEIC / HEIF / JXL / JXR | 系统解码器 | Windows 用 WIC（依赖已安装的编解码扩展）；macOS 用 ImageIO（JXL 需 macOS 14+，不支持 JXR） |
@@ -63,7 +66,7 @@
 - **文字提取**（`O`）：PDF / AI 直接读取内嵌文本；其余图片用 PaddleOCR PP-OCRv5 轻量模型（Apache-2.0）在 ONNX Runtime 上离线识别，覆盖简繁中文、英文、日文与竖排、倾斜文字，已裁剪时只识别裁剪区域。模型随安装包分发（约 21 MB），首次使用时加载，不联网。模型由 `scripts/fetch-ocr-models.mjs` 在构建前下载并校验 SHA-256（国内可设 `HF_ENDPOINT=https://hf-mirror.com`）。
 - **文件信息**（`I`）：除格式、尺寸、EXIF 外，还显示 300 dpi 下的印刷尺寸和图片主色（单击色块复制 HEX）。
 
-底部工具条只保留高频工具（裁剪、标注、调色、取色、提取文字、另存为），只在查看图片时出现。上一张 / 下一张按钮位于画面左右两侧。缩放比例显示在标题栏左侧，单击在适应窗口与 100% 之间切换；单击左上角的 OctLook 标志返回主页。标题栏右上角显示「用默认软件打开」按钮（如 PSD 显示 Photoshop 图标）：仅对设计文件、PDF、SVG、文本与代码等有更专业编辑软件的格式显示，且该软件已安装时才出现。右键图片弹出快捷菜单（复制图像 / 路径、旋转、提取文字、另存为等）。标题栏的齿轮按钮打开设置菜单：文件信息、画布背景、界面外观（跟随系统 / 深色 / 浅色）、全屏、文件操作、空格预览与开机自启开关（Windows）以及「检查更新」。缩略图栏按内容生成缩略图（视频取帧、文本显示首页、字体显示样张），右下角带格式角标；左上角的按钮可展开或收起缩略图栏（`T`）。
+底部工具条只保留高频工具（裁剪、标注、调色、取色、提取文字、另存为），只在查看图片时出现。上一张 / 下一张按钮位于画面左右两侧。缩放比例显示在标题栏左侧，单击在适应窗口与 100% 之间切换；单击左上角的 OctLook 标志返回主页。标题栏右上角显示「用默认软件打开」按钮（如 PSD 显示 Photoshop 图标）：仅对设计文件、PDF、SVG、文本与代码等有更专业编辑软件的格式显示，且该软件已安装时才出现，其他软件可在右键菜单的「打开方式」中选择。右键图片弹出快捷菜单（复制图像 / 路径、打开方式（子菜单列出推荐软件，Windows）、提取文字、另存为等）。标题栏的齿轮按钮打开设置菜单：画布背景、界面外观（跟随系统 / 深色 / 浅色）、全屏、文件操作、空格预览与开机自启开关（Windows）以及「检查更新」。缩略图栏按内容生成缩略图（视频取帧、文本显示首页、字体显示样张），右下角带格式角标；左上角的按钮可展开或收起缩略图栏（`T`）。
 
 ## macOS
 
@@ -79,7 +82,7 @@
 
 - 预览窗按文件原始尺寸显示，超过屏幕时等比缩小到工作区约 80%，居中于资源管理器所在的显示器；音频、文本、字体使用固定的默认尺寸。
 - 预览窗不抢焦点：方向键、鼠标在资源管理器里切换选中项时，预览自动跟随；再按空格、Esc 或点预览窗的关闭按钮才会关闭，切换到其他程序时预览保留。
-- 预览窗标题栏可「钉住」「用默认软件打开」或「在 OctLook 中打开」完整窗口。
+- 预览窗标题栏：单击左上角的 OctLook 标志在完整窗口中打开；右上角可用推荐软件打开或「钉住」。右键可复制文件路径、在资源管理器中显示，或从「打开方式」中选择其他软件。
 - 钉住：当前文件移到一个独立窗口（位置不变），不再跟随资源管理器，一直保留到点关闭或在其中按 Esc；再按空格会打开新的预览，可钉住多个文件并排对比。钉住的窗口出现在任务栏中。
 - 只在文件列表获得焦点时响应：重命名、地址栏、搜索框中的空格不受影响；按住 Ctrl / Alt / Shift / Win 时也不触发。文件夹和不支持的格式不处理。
 - 依赖 OctLook 在后台常驻：开启空格预览后，关闭主窗口只是隐藏到系统托盘（托盘菜单可打开主窗口或退出）。首次运行默认开启空格预览与开机自启（开机时在后台启动，不弹窗口），两者都可在设置菜单中关闭；关闭空格预览会一并关闭开机自启。安装后需先手动打开一次 OctLook。
@@ -155,8 +158,8 @@ $env:OCTLOOK_SAMPLES="D:\samples"; $env:OCTLOOK_OUT="D:\out"; cargo test --relea
 ## 架构
 
 ```
-src-tauri/crates/octlook-core   解码服务（看图程序与缩略图扩展共用）
-  decode/       psd · embedded（XMP/JPEG/PNG/EPS）· container（ZIP/CDR）· svg（resvg）· raster · cover（音频封面）· wic（Windows）· imageio（macOS）· stream（IStream 入口）
+src-tauri/crates/octlook-core   解码服务（主程序与缩略图扩展共用）
+  decode/       psd · embedded（XMP/JPEG/PNG/EPS）· container（ZIP/CDR）· svg（resvg）· postscript（Ghostscript）· blender · raster · cover（音频封面）· wic（Windows）· imageio（macOS）· stream（IStream 入口）
   format.rs     扩展名表与文件类别（唯一数据源）；meta.rs EXIF；thumbnail.rs 方向校正 + Lanczos 缩放
   text.rs       文本读取与编码识别；font.rs 字体信息
 src-tauri/crates/octlook-shell  资源管理器缩略图 COM 组件（IThumbnailProvider + IInitializeWithStream）
@@ -178,8 +181,10 @@ src
   PreviewApp.tsx 空格预览窗（同一前端包，按窗口标签切换）
 ```
 
-已复用的开源组件：`image`、`resvg`、`fast_image_resize`、`zip`、`kamadak-exif`、`trash`、`lofty`、`chardetng`、`encoding_rs`、`ttf-parser`、pdf.js、highlight.js、marked、DOMPurify、PaddleOCR PP-OCRv5 模型、ONNX Runtime（`ort`）、Windows WIC、macOS ImageIO、lucide 图标、Inter 字体。PSD 解析自研，原因是现有 crate（`psd`、`rawpsd`）不支持 PSB 或 16/32 bit。
+已复用的开源组件：`image`、`resvg`、`fast_image_resize`、`zip`、`kamadak-exif`、`trash`、`lofty`、`chardetng`、`encoding_rs`、`ttf-parser`、pdf.js、highlight.js、marked、DOMPurify、PaddleOCR PP-OCRv5 模型、ONNX Runtime（`ort`）、Ghostscript、`ruzstd`、Windows WIC、macOS ImageIO、lucide 图标、Inter 字体。PSD 解析自研，原因是现有 crate（`psd`、`rawpsd`）不支持 PSB 或 16/32 bit。
 
 ## 许可证
 
 [GPL-3.0-only](LICENSE)。修改或再分发本项目（含其衍生作品）须以同一许可证开源。
+
+安装包附带的 [Ghostscript](https://ghostscript.com)（Artifex Software）以独立程序方式调用，遵循 AGPL-3.0，许可文本随程序位于 `gs/COPYING`。Windows 版取自官方安装包（`scripts/fetch-ghostscript.mjs` 校验 SHA-256），macOS 版由 CI 从[官方源码](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases)编译。

@@ -9,6 +9,8 @@ use serde::Serialize;
 
 #[derive(Serialize)]
 pub struct DefaultApp {
+    /// What the system knows the app by (its executable): picks it in [`open`].
+    pub id: String,
     /// Display name, e.g. "Adobe Photoshop 2025".
     pub name: String,
     /// PNG of the app icon (48 px), empty when none could be read.
@@ -16,6 +18,8 @@ pub struct DefaultApp {
 }
 
 pub use imp::open;
+#[cfg(windows)]
+pub use imp::{choices, choose};
 
 /// Offered only where a more capable app exists (design files, PDF, text and
 /// code); what OctLook fully replaces — photos, video, audio, fonts — gets none.
@@ -31,12 +35,14 @@ mod imp {
     use windows::{
         core::{HSTRING, PCWSTR, PWSTR},
         Win32::{
+            Foundation::{ERROR_CANCELLED, HWND},
             Graphics::Gdi::{DeleteObject, GetDC, GetDIBits, GetObjectW, ReleaseDC, BITMAP, BITMAPINFO, BITMAPINFOHEADER, DIB_RGB_COLORS},
             System::Com::IDataObject,
             UI::{
                 Shell::{
                     AssocQueryStringW, BHID_DataObject, IAssocHandler, IShellItem, SHAssocEnumHandlers, SHCreateItemFromParsingName,
-                    SHDefExtractIconW, SHLoadIndirectString, ASSOCF_INIT_IGNOREUNKNOWN, ASSOCSTR_EXECUTABLE, ASSOC_FILTER_RECOMMENDED,
+                    SHDefExtractIconW, SHLoadIndirectString, SHOpenWithDialog, ASSOCF_INIT_IGNOREUNKNOWN, ASSOCSTR_EXECUTABLE,
+                    ASSOC_FILTER_RECOMMENDED, OAIF_ALLOW_REGISTRATION, OAIF_EXEC, OPENASINFO,
                 },
                 WindowsAndMessaging::{DestroyIcon, GetIconInfo, HICON, ICONINFO},
             },
@@ -51,14 +57,14 @@ mod imp {
 
     const ICON_PX: u32 = 48;
 
-    /// The user's default app for `path`'s type, else the first recommended
-    /// one; OctLook itself is skipped either way.
-    fn handler(path: &Path) -> Option<IAssocHandler> {
-        let ext = HSTRING::from(format!(".{}", path.extension()?.to_str()?));
+    /// The apps recommended for `path`'s type, each with its executable: the
+    /// user's default first, OctLook itself never.
+    fn handlers(path: &Path) -> Vec<(String, IAssocHandler)> {
+        let Some(ext) = path.extension().and_then(|e| e.to_str()).map(|e| HSTRING::from(format!(".{e}"))) else { return Vec::new() };
         let default = default_exe(&ext).filter(|exe| !is_octlook(exe));
         // SAFETY: plain COM enumeration; every returned interface is reference-counted.
-        let handlers = unsafe { SHAssocEnumHandlers(&ext, ASSOC_FILTER_RECOMMENDED) }.ok()?;
-        let mut candidates = Vec::new();
+        let Ok(handlers) = (unsafe { SHAssocEnumHandlers(&ext, ASSOC_FILTER_RECOMMENDED) }) else { return Vec::new() };
+        let mut found: Vec<(String, IAssocHandler)> = Vec::new();
         loop {
             let mut slot = [None];
             // SAFETY: `slot` has room for the one handler requested.
@@ -67,16 +73,24 @@ mod imp {
             }
             let Some(handler) = slot[0].take() else { break };
             // SAFETY: GetName returns an owned string we free in `take`.
-            let exe = PathBuf::from(unsafe { handler.GetName() }.map(take).unwrap_or_default());
-            if is_octlook(&exe) {
+            let exe = unsafe { handler.GetName() }.map(take).unwrap_or_default();
+            if is_octlook(Path::new(&exe)) || found.iter().any(|(seen, _)| seen.eq_ignore_ascii_case(&exe)) {
                 continue;
             }
-            if default.as_deref().is_some_and(|d| same_file(&exe, d)) {
-                return Some(handler);
+            if default.as_deref().is_some_and(|d| same_file(Path::new(&exe), d)) {
+                found.insert(0, (exe, handler));
+            } else {
+                found.push((exe, handler));
             }
-            candidates.push(handler);
         }
-        candidates.into_iter().next()
+        found
+    }
+
+    fn describe((exe, handler): (String, IAssocHandler)) -> Option<DefaultApp> {
+        // SAFETY: GetUIName returns an owned string we free in `take`.
+        let name = take(unsafe { handler.GetUIName() }.ok()?);
+        let icon = icon(&handler).and_then(|img| png(&img)).unwrap_or_default();
+        Some(DefaultApp { id: exe, name, icon })
     }
 
     /// The executable Explorer would launch, honouring the user's choice.
@@ -104,16 +118,22 @@ mod imp {
 
     pub fn find(path: &Path) -> Option<DefaultApp> {
         let _com = Com::init();
-        let handler = handler(path)?;
-        // SAFETY: as in `handler`.
-        let name = take(unsafe { handler.GetUIName() }.ok()?);
-        let icon = icon(&handler).and_then(|img| png(&img)).unwrap_or_default();
-        Some(DefaultApp { name, icon })
+        handlers(path).into_iter().next().and_then(describe)
     }
 
-    pub fn open(path: &Path) -> Result<()> {
+    /// Every app offered under "Open with" for `path`, the default first.
+    pub fn choices(path: &Path) -> Vec<DefaultApp> {
         let _com = Com::init();
-        let handler = handler(path).ok_or_else(|| AppError::Launch("没有可用的关联程序".into()))?;
+        handlers(path).into_iter().filter_map(describe).collect()
+    }
+
+    /// Opens `path` in the app `id` (from [`choices`]), or else in the default one.
+    pub fn open(path: &Path, id: Option<&str>) -> Result<()> {
+        let _com = Com::init();
+        let (_, handler) = handlers(path)
+            .into_iter()
+            .find(|(exe, _)| id.is_none_or(|id| exe == id))
+            .ok_or_else(|| AppError::Launch("没有可用的关联程序".into()))?;
         let launch = || -> windows::core::Result<()> {
             // SAFETY: the item and data object live until Invoke returns.
             unsafe {
@@ -123,6 +143,20 @@ mod imp {
             }
         };
         launch().map_err(|e| AppError::Launch(e.message()))
+    }
+
+    /// Windows' own "Open with" dialog for `path`, owned by the window `owner`
+    /// and opening the file in the app picked. False when the user cancelled.
+    pub fn choose(path: &Path, owner: isize) -> Result<bool> {
+        let _com = Com::init();
+        let file = HSTRING::from(path.as_os_str());
+        let info = OPENASINFO { pcszFile: PCWSTR(file.as_ptr()), pcszClass: PCWSTR::null(), oaifInFlags: OAIF_ALLOW_REGISTRATION | OAIF_EXEC };
+        // SAFETY: `file` outlives the call; `owner` is one of our windows (a stale handle just leaves the dialog unowned).
+        match unsafe { SHOpenWithDialog(Some(HWND(owner as _)), &info) } {
+            Ok(()) => Ok(true),
+            Err(e) if e.code() == ERROR_CANCELLED.to_hresult() => Ok(false),
+            Err(e) => Err(AppError::Launch(e.message())),
+        }
     }
 
     fn icon(handler: &IAssocHandler) -> Option<RgbaImage> {
@@ -225,7 +259,7 @@ mod imp {
         None
     }
 
-    pub fn open(_path: &Path) -> Result<()> {
+    pub fn open(_path: &Path, _id: Option<&str>) -> Result<()> {
         Err(AppError::Launch("当前系统暂不支持".into()))
     }
 }

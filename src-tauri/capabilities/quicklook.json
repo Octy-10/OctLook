@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "quicklook",
-  "description": "Space preview and pinned preview windows: listen for files, drag and close themselves",
+  "description": "Space preview and pinned preview windows: listen for files, drag and close themselves, show their file in Explorer",
   "windows": [
     "quicklook-*"
   ],
@@ -11,6 +11,7 @@
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",
-    "core:window:allow-close"
+    "core:window:allow-close",
+    "opener:allow-reveal-item-in-dir"
   ]
 }

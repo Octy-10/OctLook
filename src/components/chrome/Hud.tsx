@@ -78,7 +78,7 @@ export function Hud({ source, hidden }: { source: Source | null; hidden: boolean
       <Tool label="取色器" tip="取色器  C" onClick={() => toggle("picker")} active={picker}>
         <Pipette {...ICON} />
       </Tool>
-      <Tool label="提取文字" tip="提取文字  O" onClick={editActions.extractText} active={panel === "text"}>
+      <Tool label="提取文字" tip="提取文字  O" onClick={editActions.toggleExtractText} active={panel === "text"}>
         <ScanText {...ICON} />
       </Tool>
       {edited && (

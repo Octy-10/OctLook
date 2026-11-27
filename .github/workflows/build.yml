@@ -85,6 +85,56 @@ jobs:
 
       - run: npm ci
 
+      # Ghostscript renders EPS/PostScript and ships inside the app (AGPL-3.0).
+      # Windows takes it from the official installer (scripts/fetch-ghostscript.mjs);
+      # macOS builds it from the official source, linked to nothing but the system.
+      - name: Ghostscript cache
+        id: gs-cache
+        uses: actions/cache@v4
+        with:
+          path: src-tauri/resources/gs
+          key: ghostscript-10.08.0-${{ matrix.name }}-v1
+
+      - name: Ghostscript (Windows)
+        if: runner.os == 'Windows'
+        run: node scripts/fetch-ghostscript.mjs
+
+      - name: Ghostscript (macOS)
+        if: runner.os == 'macOS' && steps.gs-cache.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          GS_VERSION: 10.08.0
+          GS_SHA256: caf199e3f233f1290b27d0972d636f66c303355f2353309b7bfddf1edda06b3d
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/gs.tar.gz" "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs${GS_VERSION//./}/ghostscript-$GS_VERSION.tar.gz"
+          echo "$GS_SHA256  $RUNNER_TEMP/gs.tar.gz" | shasum -a 256 -c -
+          tar -xzf "$RUNNER_TEMP/gs.tar.gz" -C "$RUNNER_TEMP"
+          cd "$RUNNER_TEMP/ghostscript-$GS_VERSION"
+          # The Intel build runs on an Apple silicon runner: configured, built and tried under Rosetta.
+          run=()
+          if [ "${{ matrix.name }}" = "macos-x64" ]; then
+            /usr/bin/arch -x86_64 /usr/bin/true 2>/dev/null || sudo softwareupdate --install-rosetta --agree-to-license
+            run=(/usr/bin/arch -x86_64)
+            export CC="clang -arch x86_64"
+          fi
+          "${run[@]}" ./configure --disable-cups --disable-gtk --disable-dbus --disable-fontconfig --without-x --without-libidn --without-libpaper --without-tesseract --without-ijs --with-system-libtiff=no
+          "${run[@]}" make -j"$(sysctl -n hw.ncpu)"
+          otool -L bin/gs
+          if otool -L bin/gs | tail -n +2 | grep -vE '^[[:space:]]*(/usr/lib/|/System/)'; then
+            echo "::error::Ghostscript links libraries a user's Mac does not have"; exit 1
+          fi
+          out="$GITHUB_WORKSPACE/src-tauri/resources/gs"
+          mkdir -p "$out"
+          cp bin/gs "$out/gs"
+          cp "$([ -f doc/COPYING ] && echo doc/COPYING || echo LICENSE)" "$out/COPYING"
+          # The copy must work on its own: fonts and init files compiled in, nothing read from this build tree.
+          cd "$RUNNER_TEMP"
+          printf '%%!PS-Adobe-3.0 EPSF-3.0\n%%%%BoundingBox: 0 0 10 10\n0 0 10 10 rectfill showpage\n' > t.eps
+          mv "$RUNNER_TEMP/ghostscript-$GS_VERSION" "$RUNNER_TEMP/gs-build-moved"
+          "${run[@]}" "$out/gs" -q -dSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pdfwrite -sOutputFile=t.pdf t.eps
+          head -c 5 t.pdf | grep -q '%PDF'
+
       - name: Test
         if: matrix.name != 'macos-x64' # cross-compiled: its tests cannot run on an arm64 runner
         shell: bash

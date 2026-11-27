@@ -25,17 +25,20 @@
   "bundle": {
     "targets": ["app", "dmg"],
     "resources": {
-      "target/release/octlook_shell.dll": null
+      "target/release/octlook_shell.dll": null,
+      "resources/gs/gswin64c.exe": null,
+      "resources/gs/gsdll64.dll": null,
+      "resources/gs/gs": "gs/gs"
     },
     "category": "public.app-category.graphics-design",
     "macOS": {
       "minimumSystemVersion": "11.0"
     },
     "fileAssociations": [
-      { "name": "Photoshop Document", "ext": ["psd", "psb"], "role": "Viewer", "rank": "Alternate" },
-      { "name": "Illustrator Artwork", "ext": ["ai", "eps", "epsf"], "role": "Viewer", "rank": "Alternate" },
-      { "name": "Design File", "ext": ["cdr", "sketch", "xd", "fig", "indd", "afdesign", "afphoto", "afpub", "kra", "ora", "procreate"], "role": "Viewer", "rank": "Alternate" },
-      { "name": "Image", "ext": ["png", "apng", "jpg", "jpeg", "jfif", "gif", "webp", "avif", "heic", "heif", "bmp", "tif", "tiff", "svg", "ico", "tga", "dds", "exr", "hdr", "qoi", "jxl"], "role": "Viewer", "rank": "Alternate" },
+      { "name": "Photoshop Document", "ext": ["psd", "psb", "psdt"], "role": "Viewer", "rank": "Alternate" },
+      { "name": "Illustrator Artwork", "ext": ["ai", "ait", "eps", "epsf", "epsi", "ps"], "role": "Viewer", "rank": "Alternate" },
+      { "name": "Design File", "ext": ["cdr", "cdt", "sketch", "xd", "fig", "indd", "indt", "afdesign", "afphoto", "afpub", "kra", "ora", "procreate", "blend"], "role": "Viewer", "rank": "Alternate" },
+      { "name": "Image", "ext": ["png", "apng", "jpg", "jpeg", "jfif", "gif", "webp", "avif", "heic", "heif", "bmp", "tif", "tiff", "svg", "svgz", "ico", "icns", "tga", "dds", "exr", "hdr", "qoi", "jxl"], "role": "Viewer", "rank": "Alternate" },
       { "name": "Camera RAW", "ext": ["dng", "cr2", "cr3", "crw", "nef", "nrw", "arw", "srf", "sr2", "raf", "orf", "rw2", "pef", "srw", "x3f", "3fr", "iiq", "rwl"], "role": "Viewer", "rank": "Alternate" },
       { "name": "PDF Document", "ext": ["pdf"], "role": "Viewer", "rank": "Alternate" }
     ]

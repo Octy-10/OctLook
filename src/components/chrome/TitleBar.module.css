@@ -88,8 +88,8 @@
 }
 /* "Open in its app": the app's own icon, at caption-button scale. */
 .appIcon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 /* Positions the settings menu below its toggle. */
 .anchor {
@@ -115,7 +115,8 @@
 .anchor > button:active {
   background: var(--press);
 }
-.caption > button svg {
+/* The drawn caption glyphs (minimize, maximize, close); icons keep their own size. */
+.caption > button svg:not(:global(.lucide)) {
   width: 10px;
   height: 10px;
   fill: none;

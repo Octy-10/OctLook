@@ -2,7 +2,7 @@
 name = "octlook"
 version = "0.2.3"
 authors = ["十月"]
-description = "OctLook — a fast image viewer for designers"
+description = "OctLook — a fast, ad-free file previewer for designers"
 edition = "2021"
 license = "GPL-3.0-only"
 repository = "https://github.com/Octy-10/OctLook"

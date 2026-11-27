@@ -18,6 +18,9 @@ use std::sync::Arc;
 
 use tauri::{webview::PageLoadEvent, Manager};
 
+/// The Ghostscript command-line program bundled under `resources/gs` (EPS/PostScript).
+const GHOSTSCRIPT: &str = if cfg!(windows) { "gswin64c.exe" } else { "gs" };
+
 pub fn run() {
     #[cfg(windows)]
     if let Some(code) = shell_integration::run_cli() {
@@ -34,7 +37,9 @@ pub fn run() {
         .manage(Arc::new(thumbs::Thumbnailer::new()))
         .manage(commands::LaunchPath::from_args())
         .setup(|app| {
-            app.manage(Arc::new(ocr::Ocr::new(app.path().resource_dir()?.join("ocr"))));
+            let resources = app.path().resource_dir()?;
+            app.manage(Arc::new(ocr::Ocr::new(resources.join("ocr"))));
+            octlook_core::decode::postscript::init(&resources.join("gs").join(GHOSTSCRIPT));
             #[cfg(windows)]
             resident::setup(app.handle())?;
             Ok(())
@@ -69,6 +74,10 @@ pub fn run() {
             commands::quicklook_pin,
             #[cfg(windows)]
             commands::quicklook_ready,
+            #[cfg(windows)]
+            commands::open_with_dialog,
+            #[cfg(windows)]
+            commands::open_with_apps,
         ])
         .on_window_event(|_window, _event| {
             #[cfg(windows)]

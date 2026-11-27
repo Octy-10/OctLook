@@ -135,6 +135,16 @@ pub fn ready() {
     send(Msg::Ready);
 }
 
+/// A preview was clicked into. Shown through Win32 (see `present`), it is still
+/// hidden as far as the window layer knows, and the next style change there (a
+/// video going fullscreen) would hide it for real. Now that it has focus, telling
+/// that layer it is shown takes no focus from anyone.
+pub fn on_focus(window: &tauri::Window) {
+    if window.label().starts_with(PREFIX) {
+        let _ = window.show();
+    }
+}
+
 /// Sizes the preview to `width` × `height` logical px (the file's own size,
 /// scaled down to fit the anchor's monitor) and shows it without activating it.
 pub fn present(window: &WebviewWindow, width: f64, height: f64) -> Result<()> {
@@ -256,13 +266,15 @@ fn show(app: &AppHandle, shown: &mut Option<PathBuf>, path: PathBuf) {
 fn hide(app: &AppHandle, shown: &mut Option<PathBuf>, anchor: HWND) {
     VISIBLE.store(false, Ordering::Relaxed);
     *shown = None;
-    let Some(Ok(hwnd)) = preview(app).map(|w| w.hwnd()) else { return };
+    let Some(window) = preview(app) else { return };
+    let Ok(hwnd) = window.hwnd() else { return };
     // SAFETY: plain window calls; a stale anchor handle just fails.
     unsafe {
         let focused = GetForegroundWindow() == hwnd;
-        // Shown through Win32 (see `present`), so hidden the same way: Tauri's own
-        // `hide` believes the window was never shown and does nothing.
+        // Hidden at once, before focus goes back; `hide` then keeps the window
+        // layer's idea of it in step (see `on_focus`).
         let _ = ShowWindow(hwnd, SW_HIDE);
+        let _ = window.hide();
         if focused {
             // Clicking into the preview took focus from Explorer; hand it back.
             let _ = SetForegroundWindow(anchor);

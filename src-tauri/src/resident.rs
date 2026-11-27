@@ -86,6 +86,9 @@ pub fn setup(app: &AppHandle) -> std::result::Result<(), Box<dyn std::error::Err
 
 /// The main window hides to the tray while Space preview needs the app running.
 pub fn on_window_event(window: &Window, event: &WindowEvent) {
+    if let WindowEvent::Focused(true) = event {
+        spacebar::on_focus(window);
+    }
     if let WindowEvent::CloseRequested { api, .. } = event {
         if window.label() == "main" && spacebar::enabled() {
             api.prevent_close();

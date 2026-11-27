@@ -21,6 +21,8 @@ export function MediaView({ source }: { source: Media }) {
   const media = {
     src: source.url,
     controls: true,
+    // No ⋮ menu (download, speed, remote playback): it could never stay open, as the player never keeps focus.
+    controlsList: "nodownload noplaybackrate noremoteplayback",
     autoPlay: true,
     onError: () => setFailed(true),
     onPlay: () => setPaused(false),
@@ -31,7 +33,7 @@ export function MediaView({ source }: { source: Media }) {
   if (source.kind === "video") {
     return (
       <div className={styles.player}>
-        <video key={source.url} ref={video} className={styles.video} playsInline {...media} />
+        <video key={source.url} ref={video} className={styles.video} playsInline disablePictureInPicture {...media} />
         {/* Only while paused; never takes focus, so Space keeps meaning "next file". */}
         {paused && (
           <button className={styles.play} aria-label="播放" tabIndex={-1} onMouseDown={(e) => e.preventDefault()} onClick={play}>

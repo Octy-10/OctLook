@@ -56,7 +56,7 @@ fn register(exe: &Path) -> Result<()> {
 
     let capabilities = LOCAL_MACHINE.create(CAPABILITIES)?;
     capabilities.set_string("ApplicationName", APP)?;
-    capabilities.set_string("ApplicationDescription", "为设计师打造的极简看图工具，支持 PSD、AI、CDR 等设计文件")?;
+    capabilities.set_string("ApplicationDescription", "专为设计师打造的极简文件预览工具，秒开 PSD、AI、CDR、EPS 等设计文件，也能看图片、视频、文本与字体")?;
     capabilities.set_string("ApplicationIcon", &icon)?;
     let associations = capabilities.create("FileAssociations")?;
 

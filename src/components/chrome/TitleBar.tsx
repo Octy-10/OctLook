@@ -1,13 +1,13 @@
 import { useCallback, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { AppWindow, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 
-import { useDefaultApp } from "../../hooks/useDefaultApp";
-import { fileActions, viewActions } from "../../lib/actions";
+import { viewActions } from "../../lib/actions";
 import { isMac } from "../../lib/platform";
 import { useCurrentEntry, useLibrary } from "../../store/library";
 import { useViewState } from "../../store/view";
 import { Logo } from "../Logo";
+import { OpenElsewhere } from "./OpenElsewhere";
 import { SettingsMenu } from "./SettingsMenu";
 import styles from "./TitleBar.module.css";
 
@@ -23,7 +23,7 @@ export function TitleBar({ maximized }: { maximized: boolean }) {
   const total = useLibrary((s) => s.entries.length);
   const zoom = useViewState((s) => Math.round(s.view.scale * 100));
   const fit = useViewState((s) => s.view.fit);
-  const app = useDefaultApp(useCurrentEntry()?.path ?? null);
+  const path = useCurrentEntry()?.path;
   const [menu, setMenu] = useState(false);
   const closeMenu = useCallback(() => setMenu(false), []);
 
@@ -62,11 +62,7 @@ export function TitleBar({ maximized }: { maximized: boolean }) {
       </div>
 
       <div className={styles.caption}>
-        {app && (
-          <button aria-label={`用 ${app.name} 打开`} data-tip={`用 ${app.name} 打开`} data-tip-side="bottom" onClick={fileActions.openWithDefault}>
-            {app.icon ? <img className={styles.appIcon} src={app.icon} alt="" draggable={false} /> : <AppWindow size={15} strokeWidth={1.75} />}
-          </button>
-        )}
+        {path && <OpenElsewhere path={path} icon={{ size: 15, strokeWidth: 1.75 }} />}
         <div className={styles.anchor}>
           <button aria-label="设置" data-tip={menu ? undefined : "设置"} data-tip-side="bottom" data-active={menu || undefined} onClick={() => setMenu((open) => !open)}>
             <Settings size={15} strokeWidth={1.75} />

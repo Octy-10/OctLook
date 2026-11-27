@@ -27,13 +27,18 @@ pub enum Format {
     /// Illustrator: PDF-compatible (`pdf == true`) or legacy PostScript.
     Ai { pdf: bool },
     Psd,
-    Eps,
+    /// EPS or PostScript: rendered to PDF by Ghostscript, else its embedded preview.
+    PostScript(&'static str),
     Cdr,
     Indd,
     Affinity,
     /// ZIP containers that ship a flattened preview (Sketch, XD, Figma, Krita…).
     ZipPreview(&'static str),
     CameraRaw,
+    /// Blender: the thumbnail it saves with the file.
+    Blender,
+    /// macOS icon set: its largest PNG member.
+    Icns,
     /// Decoded in Rust by the `image` crate (WIC fallback on Windows).
     Raster(&'static str),
     /// Only decodable through OS codecs (HEIC, JPEG XR, JPEG XL).
@@ -50,16 +55,19 @@ const TABLE: &[(&str, Format)] = &[
     ("jpg", Format::Native("JPEG")), ("jpeg", Format::Native("JPEG")), ("jfif", Format::Native("JPEG")),
     ("png", Format::Native("PNG")), ("apng", Format::Native("APNG")), ("gif", Format::Native("GIF")),
     ("webp", Format::Native("WebP")), ("avif", Format::Native("AVIF")), ("bmp", Format::Native("BMP")),
-    ("ico", Format::Native("ICO")), ("svg", Format::Svg),
+    ("ico", Format::Native("ICO")), ("svg", Format::Svg), ("svgz", Format::Svg), ("icns", Format::Icns),
     ("tif", Format::Raster("TIFF")), ("tiff", Format::Raster("TIFF")), ("tga", Format::Raster("TGA")),
     ("dds", Format::Raster("DDS")), ("hdr", Format::Raster("HDR")), ("exr", Format::Raster("OpenEXR")),
     ("qoi", Format::Raster("QOI")), ("pbm", Format::Raster("PBM")), ("pgm", Format::Raster("PGM")),
     ("ppm", Format::Raster("PPM")), ("pam", Format::Raster("PAM")),
     ("heic", Format::OsCodec("HEIC")), ("heif", Format::OsCodec("HEIF")), ("jxl", Format::OsCodec("JPEG XL")),
     ("jxr", Format::OsCodec("JPEG XR")), ("wdp", Format::OsCodec("JPEG XR")),
-    ("psd", Format::Psd), ("psb", Format::Psd),
-    ("ai", Format::Ai { pdf: false }), ("eps", Format::Eps), ("epsf", Format::Eps), ("pdf", Format::Pdf),
-    ("cdr", Format::Cdr), ("indd", Format::Indd),
+    ("psd", Format::Psd), ("psb", Format::Psd), ("psdt", Format::Psd),
+    ("ai", Format::Ai { pdf: false }), ("ait", Format::Ai { pdf: false }), ("pdf", Format::Pdf),
+    ("eps", Format::PostScript("EPS")), ("epsf", Format::PostScript("EPS")), ("epsi", Format::PostScript("EPS")),
+    ("ps", Format::PostScript("PostScript")),
+    ("cdr", Format::Cdr), ("cdt", Format::Cdr), ("indd", Format::Indd), ("indt", Format::Indd),
+    ("blend", Format::Blender),
     ("afphoto", Format::Affinity), ("afdesign", Format::Affinity), ("afpub", Format::Affinity),
     ("sketch", Format::ZipPreview("Sketch")), ("xd", Format::ZipPreview("Adobe XD")), ("fig", Format::ZipPreview("Figma")),
     ("kra", Format::ZipPreview("Krita")), ("ora", Format::ZipPreview("OpenRaster")), ("procreate", Format::ZipPreview("Procreate")),
@@ -144,7 +152,19 @@ pub fn from_extension(ext: &str, head: &[u8]) -> Option<Format> {
 impl Format {
     /// Formats whose preview needs neither a file path nor an OS codec.
     pub fn decodes_from_bytes(self) -> bool {
-        matches!(self, Format::Svg | Format::Psd | Format::Ai { .. } | Format::Eps | Format::Cdr | Format::Indd | Format::Affinity | Format::ZipPreview(_))
+        matches!(
+            self,
+            Format::Svg
+                | Format::Psd
+                | Format::Ai { .. }
+                | Format::PostScript(_)
+                | Format::Cdr
+                | Format::Indd
+                | Format::Affinity
+                | Format::ZipPreview(_)
+                | Format::Blender
+                | Format::Icns
+        )
     }
 
     /// Files OctLook shows but cannot author, whose own apps do far more
@@ -157,11 +177,12 @@ impl Format {
                 | Format::Pdf
                 | Format::Psd
                 | Format::Ai { .. }
-                | Format::Eps
+                | Format::PostScript(_)
                 | Format::Cdr
                 | Format::Indd
                 | Format::Affinity
                 | Format::ZipPreview(_)
+                | Format::Blender
                 | Format::Text(_)
         )
     }
@@ -178,17 +199,18 @@ impl Format {
 
     pub fn label(self) -> &'static str {
         match self {
-            Format::Native(n) | Format::Raster(n) | Format::OsCodec(n) | Format::ZipPreview(n) => n,
+            Format::Native(n) | Format::Raster(n) | Format::OsCodec(n) | Format::ZipPreview(n) | Format::PostScript(n) => n,
             Format::Video(n) | Format::Audio(n) | Format::Text(n) | Format::Font(n) => n,
             Format::Svg => "SVG",
             Format::Pdf => "PDF",
             Format::Ai { .. } => "Adobe Illustrator",
             Format::Psd => "Photoshop",
-            Format::Eps => "EPS",
             Format::Cdr => "CorelDRAW",
             Format::Indd => "InDesign",
             Format::Affinity => "Affinity",
             Format::CameraRaw => "Camera RAW",
+            Format::Blender => "Blender",
+            Format::Icns => "macOS 图标",
         }
     }
 }

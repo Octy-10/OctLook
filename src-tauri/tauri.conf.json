@@ -54,7 +54,10 @@
       "target/release/octlook_shell.dll": "octlook_shell.dll",
       "resources/ocr/det.onnx": "ocr/det.onnx",
       "resources/ocr/rec.onnx": "ocr/rec.onnx",
-      "resources/ocr/dict.txt": "ocr/dict.txt"
+      "resources/ocr/dict.txt": "ocr/dict.txt",
+      "resources/gs/gswin64c.exe": "gs/gswin64c.exe",
+      "resources/gs/gsdll64.dll": "gs/gsdll64.dll",
+      "resources/gs/COPYING": "gs/COPYING"
     },
     "windows": {
       "nsis": {

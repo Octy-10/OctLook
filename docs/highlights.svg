@@ -129,7 +129,7 @@
     <circle cx="560" cy="700" r="150" fill="#22D3EE" opacity="0.16" filter="url(#glow)"/>
   </g>
   <rect x="40.5" y="672.5" width="591" height="279" rx="27.5" fill="none" stroke="url(#edge)"/>
-  <text x="80" y="728" fill="#86868B" font-size="17" font-weight="600">不止看图</text>
+  <text x="80" y="728" fill="#86868B" font-size="17" font-weight="600">多格式预览</text>
   <text x="80" y="768" fill="#F5F5F7" font-size="30" font-weight="700" letter-spacing="-0.5">影音、代码、字体，一并预览。</text>
   <!-- Video -->
   <rect x="80" y="800" width="104" height="84" rx="12" fill="url(#thumbC)"/>

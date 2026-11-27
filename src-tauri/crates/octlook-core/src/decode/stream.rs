@@ -6,7 +6,7 @@ use std::io::{Read, Seek, SeekFrom};
 
 use image::RgbaImage;
 
-use super::{decode_bytes, psd, svg, Decoded, Purpose};
+use super::{decode_bytes, postscript, psd, svg, Decoded, Purpose};
 use crate::{
     format::{self, Format},
     thumbnail, Error, Result,
@@ -51,6 +51,12 @@ pub fn thumbnail<R: Read + Seek>(r: &mut R, ext: &str, size: u32) -> Result<Rgba
     r.read_to_end(&mut buf)?;
     if format == Format::Svg {
         return svg::render(&buf, size); // vectors are drawn at the requested size directly
+    }
+    if let Format::PostScript(_) = format {
+        // Most EPS files embed no preview: Ghostscript then draws the artwork itself.
+        return decode_bytes(&buf, format, purpose)
+            .and_then(|decoded| fit(decoded, size))
+            .or_else(|e| if postscript::available() { postscript::thumbnail(&buf, size) } else { Err(e) });
     }
     fit(decode_bytes(&buf, format, purpose)?, size)
 }

@@ -89,7 +89,7 @@ fn ignore_missing(result: Result<()>) -> Result<()> {
     }
 }
 
-fn module_path(module: usize) -> Result<String> {
+pub fn module_path(module: usize) -> Result<String> {
     let mut buf = vec![0u16; 512];
     loop {
         // SAFETY: `module` is this DLL's handle captured in `DllMain`.

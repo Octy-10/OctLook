@@ -9,16 +9,12 @@ import {
   FolderSearch,
   ImagePlus,
   Images,
-  Info,
-  Maximize,
-  Scan,
-  Trash2,
 } from "lucide-react";
 
 import { useAsync } from "../../hooks/useAsync";
 import { useResidentSettings } from "../../hooks/useResidentSettings";
-import { fileActions, viewActions, windowActions } from "../../lib/actions";
-import { isMac, REVEAL_LABEL, TRASH_LABEL } from "../../lib/platform";
+import { fileActions, windowActions } from "../../lib/actions";
+import { isMac, REVEAL_LABEL } from "../../lib/platform";
 import { useUpdate } from "../../store/update";
 import { useViewState, type Backdrop, type Theme } from "../../store/view";
 import { MENU_ICON as ICON, MenuItem as Item, useMenuDismiss } from "./Menu";
@@ -87,8 +83,7 @@ export function SettingsMenu({ onClose }: { onClose(): void }) {
   const ref = useRef<HTMLDivElement>(null);
   const backdrop = useViewState((s) => s.backdrop);
   const theme = useViewState((s) => s.theme);
-  const panel = useViewState((s) => s.panel);
-  const { setBackdrop, setTheme, togglePanel } = useViewState.getState();
+  const { setBackdrop, setTheme } = useViewState.getState();
   const version = useAsync("version", getVersion);
   const checking = useUpdate((s) => s.state.phase === "checking");
 
@@ -101,12 +96,7 @@ export function SettingsMenu({ onClose }: { onClose(): void }) {
       role="menu"
       onClick={(e) => (e.target as Element).closest("[data-dismiss]") && onClose()}
     >
-      <h5>工具</h5>
-      <Item icon={<Info {...ICON} />} label="文件信息" shortcut="I" checked={panel === "info"} onSelect={() => togglePanel("info")} />
-
       <h5>显示</h5>
-      <Item icon={<Scan {...ICON} />} label="适应窗口" shortcut="0" onSelect={viewActions.fit} />
-      <Item icon={<Maximize {...ICON} />} label="实际大小" shortcut="1" onSelect={viewActions.actualSize} />
       <Segmented label="画布背景" options={BACKDROPS} value={backdrop} onChange={setBackdrop} />
       <Segmented label="界面外观" options={THEMES} value={theme} onChange={setTheme} />
       <Item icon={<Expand {...ICON} />} label="全屏" shortcut="F" onSelect={windowActions.toggleFullscreen} />
@@ -116,7 +106,6 @@ export function SettingsMenu({ onClose }: { onClose(): void }) {
       <Item icon={<FolderOpen {...ICON} />} label="打开文件夹" shortcut="Ctrl Shift O" onSelect={() => fileActions.openDialog(true)} />
       <Item icon={<FolderSearch {...ICON} />} label={REVEAL_LABEL} shortcut="Ctrl E" onSelect={fileActions.reveal} />
       <Item icon={<Copy {...ICON} />} label="复制路径" shortcut="Ctrl Shift C" onSelect={fileActions.copyPath} />
-      <Item icon={<Trash2 {...ICON} />} label={TRASH_LABEL} shortcut="Del" danger onSelect={fileActions.trash} />
 
       {!isMac && <SystemSection />}
 

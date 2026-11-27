@@ -9,12 +9,14 @@
 //! Video, audio, text and fonts are `Native` too: `meta.category` sends them
 //! to their own viewers instead of the image stage.
 
+mod blender;
 mod container;
 mod cover;
 mod embedded;
 #[cfg(target_os = "macos")]
 mod imageio;
 mod pdf_art;
+pub mod postscript;
 mod psd;
 pub(crate) mod raster;
 pub mod stream;
@@ -24,7 +26,7 @@ mod wic;
 
 use std::{
     fs::File,
-    io::{BufReader, Cursor},
+    io::{BufReader, Cursor, Read},
     path::Path,
 };
 
@@ -129,7 +131,9 @@ pub fn decode(path: &Path, purpose: Purpose) -> Result<Decoded> {
                 Decoded::new(format, Payload::Pixels(raster::open(path)?), Source::Full).orientation(meta::orientation(path))
             }
         },
+        Format::Svg if format::extension(path).as_deref() == Some("svgz") => svgz(path, format, purpose)?,
         Format::Svg => Decoded::new(format, Payload::Native, Source::Full),
+        Format::PostScript(_) => postscript(path, format, purpose)?,
         Format::Audio(_) if purpose == Purpose::Thumbnail => match cover::audio(path) {
             Some(art) => Decoded::new(format, art.into(), Source::Full),
             None => Decoded::new(format, Payload::Native, Source::Full),
@@ -177,16 +181,50 @@ pub fn decode_bytes(buf: &[u8], format: Format, purpose: Purpose) -> Result<Deco
             None => return Err(Error::NoPreview("该 AI 文件未包含 PDF 兼容内容与缩略图")),
         },
         Format::Psd => psd::decode(buf, purpose)?,
-        Format::Eps => match embedded::eps_tiff_preview(buf) {
+        Format::PostScript(_) => match embedded::eps_tiff_preview(buf) {
             Some(tiff) => Decoded::new(format, Payload::Pixels(raster::from_memory(tiff)?), Source::Preview),
             None => preview(format, embedded::xmp_thumbnail(buf), "EPS 未内嵌 TIFF/XMP 预览")?,
         },
+        Format::Blender => match blender::thumbnail(buf) {
+            Some(pixels) => Decoded::new(format, Payload::Pixels(pixels), Source::Preview),
+            None => return Err(Error::NoPreview("该文件保存时未生成缩略图")),
+        },
+        Format::Icns => Decoded::new(format, embedded::largest_png(buf).ok_or(Error::NoPreview("图标中没有 PNG 图像"))?.into(), Source::Full),
         Format::Indd => preview(format, embedded::xmp_thumbnail(buf), "InDesign 缩略图")?,
         Format::Affinity => preview(format, embedded::largest_png(buf), "Affinity 缩略图")?,
         Format::Cdr => preview(format, container::cdr_preview(buf)?, "CorelDRAW 缩略图")?.note(CDR_NOTE),
         Format::ZipPreview(_) => preview(format, container::zip_preview(Cursor::new(buf))?, ZIP_PREVIEW)?,
         other => return Err(Error::Unsupported(format!("{}（需要文件路径）", other.label()))),
     })
+}
+
+/// Gzipped SVG: the WebView cannot open it from disk, so it gets the plain
+/// document (drawn as a vector like any SVG); thumbnails are rasterised here.
+fn svgz(path: &Path, format: Format, purpose: Purpose) -> Result<Decoded> {
+    const THUMB_EDGE: u32 = 1024;
+    let mut svg = Vec::new();
+    flate2::read::GzDecoder::new(File::open(path)?).read_to_end(&mut svg)?;
+    Ok(match purpose {
+        Purpose::View => Decoded::new(format, Payload::Encoded { bytes: svg, mime: "image/svg+xml" }, Source::Full),
+        Purpose::Thumbnail => Decoded::new(format, Payload::Pixels(svg::render(&svg, THUMB_EDGE)?), Source::Full),
+    })
+}
+
+/// EPS/PostScript through Ghostscript, drawn as a PDF. Thumbnails prefer the
+/// embedded preview (instant); without one the frontend asks for the PDF.
+/// Should Ghostscript be missing or fail, the embedded preview stands in.
+fn postscript(path: &Path, format: Format, purpose: Purpose) -> Result<Decoded> {
+    let buf = std::fs::read(path)?;
+    if purpose == Purpose::Thumbnail || !postscript::available() {
+        return decode_bytes(&buf, format, purpose).or_else(|e| match postscript::available() {
+            true => Ok(Decoded::new(format, Payload::Pdf(Vec::new()), Source::Full)),
+            false => Err(e),
+        });
+    }
+    match postscript::to_pdf(path) {
+        Ok(pdf) => Ok(Decoded::new(format, Payload::Pdf(pdf), Source::Full)),
+        Err(e) => decode_bytes(&buf, format, purpose).map_err(|_| e),
+    }
 }
 
 /// pdf.js needs the document only for viewing; thumbnails fetch it lazily.
@@ -265,6 +303,8 @@ mod sample_tests {
     fn decode_local_samples() {
         let (Ok(dir), Ok(out)) = (std::env::var("OCTLOOK_SAMPLES"), std::env::var("OCTLOOK_OUT")) else { return };
         std::fs::create_dir_all(&out).unwrap();
+        // A bundled Ghostscript is named by $OCTLOOK_GS; otherwise an installed one is used.
+        postscript::init(Path::new(&std::env::var("OCTLOOK_GS").unwrap_or_default()));
         for entry in std::fs::read_dir(dir).unwrap().flatten() {
             let path = entry.path();
             if !format::is_supported(&path) {

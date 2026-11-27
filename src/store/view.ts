@@ -64,3 +64,9 @@ export const useViewState = create<ViewState>()(
     },
   ),
 );
+
+// Every window (main, Space previews) keeps these preferences: one changed in
+// any of them, say the theme, applies in all of them at once.
+window.addEventListener("storage", (event) => {
+  if (event.key === useViewState.persist.getOptions().name) void useViewState.persist.rehydrate();
+});

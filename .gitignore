@@ -4,6 +4,7 @@ src-tauri/target
 src-tauri/gen
 public/pdfjs
 src-tauri/resources/ocr/*.onnx
+src-tauri/resources/gs/
 
 # Secrets never belong in the repo
 *.key

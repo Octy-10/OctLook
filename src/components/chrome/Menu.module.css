@@ -184,7 +184,43 @@
   width: 232px;
   max-height: calc(100vh - 16px);
   transform-origin: top left;
+  /* The "Open with" list sits outside the menu box. */
+  overflow: visible;
   z-index: 100;
+}
+/* "Open with": the row, its chevron, and the list of apps beside it. */
+.sub {
+  position: relative;
+}
+.sub > .item[data-active] {
+  background: var(--float-hover);
+  color: var(--float-text);
+}
+.chevron {
+  margin-right: -4px;
+  color: var(--float-muted);
+}
+/* Placed beside its row by `OpenWithMenu`, within the window. */
+.submenu {
+  top: 0;
+  right: auto;
+  left: 0;
+  width: max-content;
+  min-width: 180px;
+  max-width: min(280px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
+  transform-origin: top left;
+  z-index: 1;
+}
+.submenu .item span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.appIcon {
+  flex: none;
+  width: 16px;
+  height: 16px;
 }
 .separator {
   height: 1px;

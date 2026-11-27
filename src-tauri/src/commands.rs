@@ -77,9 +77,25 @@ pub async fn default_app(path: PathBuf) -> Result<Option<default_app::DefaultApp
     blocking(move || Ok(default_app::find(&path))).await
 }
 
+/// Opens `path` in the app `app` (an id from `open_with_apps`), or else in its default one.
 #[tauri::command]
-pub async fn open_with_default(path: PathBuf) -> Result<()> {
-    blocking(move || default_app::open(&path)).await
+pub async fn open_with_default(path: PathBuf, app: Option<String>) -> Result<()> {
+    blocking(move || default_app::open(&path, app.as_deref())).await
+}
+
+/// The apps the system recommends for `path` ("Open with"), the default first.
+#[cfg(windows)]
+#[tauri::command]
+pub async fn open_with_apps(path: PathBuf) -> Result<Vec<default_app::DefaultApp>> {
+    blocking(move || Ok(default_app::choices(&path))).await
+}
+
+/// Windows' "Open with" dialog, over the window that asked; true once an app was picked.
+#[cfg(windows)]
+#[tauri::command]
+pub async fn open_with_dialog(window: tauri::WebviewWindow, path: PathBuf) -> Result<bool> {
+    let owner = window.hwnd()?.0 as isize;
+    blocking(move || default_app::choose(&path, owner)).await
 }
 
 #[tauri::command]

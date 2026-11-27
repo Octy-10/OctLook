@@ -4,9 +4,11 @@ use std::{
     cell::RefCell,
     ffi::c_void,
     panic::{catch_unwind, AssertUnwindSafe},
+    path::Path,
+    sync::{atomic::Ordering, Once},
 };
 
-use octlook_core::decode::stream;
+use octlook_core::decode::{postscript, stream};
 use windows::{
     core::{Error, IUnknown, Interface, Ref, Result, BOOL, GUID},
     Win32::{
@@ -22,7 +24,7 @@ use windows::{
 };
 use windows_core::implement;
 
-use crate::{badge, bitmap, overlay, stream::StreamReader};
+use crate::{badge, bitmap, overlay, registry, stream::StreamReader, MODULE};
 
 #[implement(IClassFactory)]
 pub struct Factory;
@@ -71,6 +73,7 @@ impl IThumbnailProvider_Impl for ThumbnailProvider_Impl {
         }
         let stream = self.stream.borrow().clone().ok_or_else(|| Error::from(E_UNEXPECTED))?;
         let ext = crate::stream::extension(&stream)?;
+        ghostscript();
         // A panic must never unwind into Explorer's surrogate process.
         let render = || {
             let mut image = stream::thumbnail(&mut StreamReader(stream), &ext, cx)?;
@@ -90,4 +93,17 @@ impl IThumbnailProvider_Impl for ThumbnailProvider_Impl {
         }
         Ok(())
     }
+}
+
+/// EPS files without an embedded preview are drawn by the Ghostscript the app
+/// bundles beside this DLL (`gs\gswin64c.exe` in the install folder).
+fn ghostscript() {
+    static INIT: Once = Once::new();
+    INIT.call_once(|| {
+        if let Ok(dll) = registry::module_path(MODULE.load(Ordering::Relaxed)) {
+            if let Some(dir) = Path::new(&dll).parent() {
+                postscript::init(&dir.join("gs").join("gswin64c.exe"));
+            }
+        }
+    });
 }

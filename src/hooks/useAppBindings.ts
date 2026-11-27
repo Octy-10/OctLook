@@ -53,7 +53,7 @@ const BINDINGS: Binding[] = [
   [key("a"), editActions.toggleAnnotate],
   [key("Enter"), editActions.applyCrop],
   [key("e"), () => view().togglePanel("edit")],
-  [key("o"), editActions.extractText],
+  [key("o"), editActions.toggleExtractText],
   [key("e", { ctrl: true }), fileActions.reveal],
   // While annotating, Delete only ever removes annotations, never the file.
   // Mac keyboards label Backspace "delete"; elsewhere Backspace stays harmless.

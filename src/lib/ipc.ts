@@ -40,6 +40,8 @@ export interface DecodeMeta {
 }
 
 export interface DefaultApp {
+  /** Picks this app in `openWithDefault`. */
+  id: string;
   name: string;
   /** PNG bytes of the app icon; empty when it could not be read. */
   icon: number[];
@@ -97,7 +99,12 @@ export const api = {
   readText: (path: string, limit?: number) => invoke<TextFile>("read_text", { path, limit }),
   fontInfo: (path: string) => invoke<FontInfo>("font_info", { path }),
   defaultApp: (path: string) => invoke<DefaultApp | null>("default_app", { path }),
-  openWithDefault: (path: string) => invoke<void>("open_with_default", { path }),
+  /** Opens `path` in the app `app` (an id from `openWithApps`), or else in its default one. */
+  openWithDefault: (path: string, app?: string) => invoke<void>("open_with_default", { path, app }),
+  /** Windows only: the apps "Open with" lists for `path`, the default first. */
+  openWithApps: (path: string) => invoke<DefaultApp[]>("open_with_apps", { path }),
+  /** Windows only; true once the user picked an app. */
+  openWithDialog: (path: string) => invoke<boolean>("open_with_dialog", { path }),
   moveToTrash: (path: string) => invoke<void>("move_to_trash", { path }),
   launchPath: () => invoke<string | null>("launch_path"),
   supportedExtensions: () => invoke<string[]>("supported_extensions"),

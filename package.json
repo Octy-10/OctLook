@@ -2,7 +2,7 @@
   "name": "octlook",
   "private": true,
   "version": "0.2.3",
-  "description": "专为设计师打造的极简看图软件",
+  "description": "专为设计师打造的极简无广告文件预览工具",
   "license": "GPL-3.0-only",
   "author": "十月",
   "homepage": "https://github.com/Octy-10",
@@ -12,9 +12,9 @@
   },
   "type": "module",
   "scripts": {
-    "predev": "node scripts/copy-runtime-assets.mjs && node scripts/fetch-ocr-models.mjs",
+    "predev": "node scripts/copy-runtime-assets.mjs && node scripts/fetch-ocr-models.mjs && node scripts/fetch-ghostscript.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/copy-runtime-assets.mjs && node scripts/fetch-ocr-models.mjs",
+    "prebuild": "node scripts/copy-runtime-assets.mjs && node scripts/fetch-ocr-models.mjs && node scripts/fetch-ghostscript.mjs",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "tauri": "tauri"
@@ -40,6 +40,7 @@
     "@types/react": "^19.3.1",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",
+    "7z-wasm": "1.2.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.8"
   }
